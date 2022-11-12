@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Cooking.iml" filepath="$PROJECT_DIR$/Cooking.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CookingClient/CookingClient.iml" filepath="$PROJECT_DIR$/CookingClient/CookingClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CookingServer/CookingServer.iml" filepath="$PROJECT_DIR$/CookingServer/CookingServer.iml" />
+    </modules>
+  </component>
+</project>
