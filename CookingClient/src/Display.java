@@ -1,21 +1,20 @@
-import Data.Config;
+import Data.*;
 import Data.KeyEventData;
-import Data.RenderData;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.Collections;
 import java.util.Vector;
 
 public class Display {
+    private final Vector<RenderData> renderDataVector = new Vector<>();
     private JFrame frame;
     private Canvas canvas;
     private KeyManager keyManager;
-    private CookTogether cookTogether;
+    private final CookTogether cookTogether;
 
-    private final Vector<RenderData> renderDataVector = new Vector<>();
-
-    public Display(CookTogether cookTogether){
+    public Display(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
         createDisplay();
     }
@@ -43,40 +42,53 @@ public class Display {
         frame.pack();
     }
 
-    private void updateDisplay(Graphics graphics){
-        for(RenderData renderDataItem : renderDataVector) {
-            graphics.drawImage(
-                    renderDataItem.sprite(),
-                    renderDataItem.x(),
-                    renderDataItem.y(),
-                    null
-            );
+    private void updateDisplay(Graphics graphics) {
+        Collections.sort(renderDataVector);
+        for (RenderData renderDataItem : renderDataVector) {
+            if (renderDataItem instanceof ImageRenderData data) {
+                graphics.drawImage(
+                        data.getSprite(),
+                        data.getX(),
+                        data.getY(),
+                        Config.CharacterSize,
+                        Config.CharacterSize,
+                        null
+                );
+            } else if (renderDataItem instanceof StringRenderData data) {
+                graphics.drawString(
+                        data.getMessage(),
+                        data.getX(),
+                        data.getY()
+                );
+            } else {
+                continue;
+            }
         }
         renderDataVector.clear();
         keyManager.keyEventUpdate();
     }
 
-    public void render(){
+    public void render() {
         BufferStrategy bufferStrategy = canvas.getBufferStrategy();
 
-        if(bufferStrategy == null){
+        if (bufferStrategy == null) {
             canvas.createBufferStrategy(3);
             return;
         }
 
         Graphics graphics = bufferStrategy.getDrawGraphics();
         graphics.clearRect(0, 0, Config.DisplayWidth, Config.DisplayHeight);
-
         updateDisplay(graphics);
+
         bufferStrategy.show();
         graphics.dispose();
     }
 
-    public void addRenderData(RenderData renderData){
-        renderDataVector.add(renderData);
+    public void addRenderData(RenderData renderData) {
+        renderDataVector.addElement(renderData);
     }
 
-    public KeyEventData getKeyEventData(){
+    public KeyEventData getKeyEventData() {
         return keyManager.getKetEventData();
     }
 }

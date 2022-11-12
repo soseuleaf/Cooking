@@ -20,7 +20,7 @@ public class KeyManager implements KeyListener {
                 keys[KeyEvent.VK_SPACE]);
     }
 
-    public KeyEventData getKetEventData(){
+    public KeyEventData getKetEventData() {
         return keyEventData;
     }
 

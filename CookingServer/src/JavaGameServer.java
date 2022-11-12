@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.Vector;
 
 public class JavaGameServer extends JFrame {
@@ -86,7 +87,7 @@ public class JavaGameServer extends JFrame {
     }
 
     public void AppendObject(EventPacket msg) {
-        textArea.append("code = " + msg.code + "id = " + msg.UserName + "data = " + msg.data + " x: " + msg.x + " y: " + msg.y);
+        textArea.append("code = " + msg.code + "id = " + msg.uuid.toString() + "data = " + msg.data + " x: " + msg.x + " y: " + msg.y);
         textArea.append("\n");
         textArea.setCaretPosition(textArea.getText().length());
     }
@@ -115,7 +116,7 @@ public class JavaGameServer extends JFrame {
 
     // User 당 생성되는 Thread
     class UserService extends Thread {
-        public String UserName = "";
+        public UUID uuid;
         public String UserStatus;
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
@@ -137,7 +138,7 @@ public class JavaGameServer extends JFrame {
         }
 
         public void Login() {
-            AppendText("새로운 참가자 " + UserName + " 입장.");
+            AppendText("새로운 참가자 " + uuid.toString() + " 입장.");
         }
 
         public void Logout() {
@@ -205,11 +206,11 @@ public class JavaGameServer extends JFrame {
                     } else
                         continue;
                     if (cm.code == EventEnum.CONNECT) {
-                        UserName = cm.UserName;
+                        uuid = cm.uuid;
                         UserStatus = "O"; // Online 상태
                         Login();
                     } else if (cm.code == EventEnum.MOVE) {
-                        msg = String.format("[%s] %s", cm.UserName, cm.data);
+                        msg = String.format("[%s] %s", cm.uuid.toString(), cm.data);
                         WriteOtherObject(cm);
                     } else if (cm.code == EventEnum.ACTION) {
                         Logout();

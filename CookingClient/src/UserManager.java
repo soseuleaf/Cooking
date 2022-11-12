@@ -1,37 +1,39 @@
-import Data.EventPacket;
-import Data.Player;
-import Data.RenderData;
+import Data.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class UserManager {
     private final CookTogether cookTogether;
-    private final Map<String, Player> playerMap = new HashMap<>();
+    private final Map<UUID, User> userMap = new HashMap<>();
 
     public UserManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
     }
 
-    public void recvEventPacket(EventPacket eventPacket){
-        if(playerMap.containsKey(eventPacket.UserName)){
-            Player player = playerMap.get(eventPacket.UserName);
-            player.setEvent(eventPacket);
-            playerMap.put(eventPacket.UserName, player);
-        }
-        else{
-            addNewUser(eventPacket.UserName, new Player(eventPacket.UserName, eventPacket.x, eventPacket.y));
+    public void recvEventPacket(EventPacket eventPacket) {
+        if (userMap.containsKey(eventPacket.uuid)) {
+            updateUser(userMap.get(eventPacket.uuid), eventPacket);
+        } else {
+            addNewUser(eventPacket.uuid, new User("닉네임임시"));
         }
     }
 
-    public void addNewUser(String name, Player player) {
-        playerMap.put(name, player);
+    private void updateUser(User user, EventPacket eventPacket) {
+        user.setEvent(eventPacket);
+        userMap.put(eventPacket.uuid, user);
     }
 
-    public void update(){
-        for (String key : playerMap.keySet()) {
-            Player user = playerMap.get(key);
-            cookTogether.addRenderData(new RenderData(user.getX(), user.getY(), user.getSprite()));
+    private void addNewUser(UUID uuid, User user) {
+        userMap.put(uuid, user);
+    }
+
+    public void updateRender() {
+        for (UUID uuid : userMap.keySet()) {
+            User user = userMap.get(uuid);
+            cookTogether.addRenderData(new ImageRenderData(user.getX(), user.getY(), user.getSprite(), user.getDepth()));
+            cookTogether.addRenderData(new StringRenderData(user.getX(), user.getY(), user.getName()));
         }
     }
 }

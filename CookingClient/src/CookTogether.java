@@ -1,4 +1,7 @@
 import Data.*;
+import Data.EventEnum;
+import Data.KeyEventData;
+import Render.Assets;
 
 public class CookTogether implements Runnable {
     private Display display;
@@ -9,18 +12,15 @@ public class CookTogether implements Runnable {
     private UserManager userManager;
 
     public CookTogether() {
-        init();
-    }
-
-    public KeyEventData getKeyEventData() {
-        return keyEventData;
+        Assets.init();
+        this.init();
     }
 
     public void addRenderData(RenderData renderData) {
         display.addRenderData(renderData);
     }
 
-    public void sendEventPacket(int x, int y){
+    public void sendEventPacket(int x, int y) {
         network.sendMovePacket(EventEnum.MOVE, "Move", x, y);
     }
 
@@ -31,18 +31,18 @@ public class CookTogether implements Runnable {
     private void init() {
         this.display = new Display(this);
         this.playerManager = new PlayerManager(this);
-        this.network = new Network(this,"Test", "127.0.0.1", "30000");
+        this.network = new Network(this, "Test", "127.0.0.1", "30000");
         this.userManager = new UserManager(this);
     }
 
     private void update() {
         // 키 데이터 전송
         keyEventData = display.getKeyEventData();
-        playerManager.setKeyEventData(keyEventData);
+        playerManager.updateData(keyEventData);
 
         // 데이터 가공
-        playerManager.update();
-        userManager.update();
+        playerManager.updateRender();
+        userManager.updateRender();
         display.render();
     }
 

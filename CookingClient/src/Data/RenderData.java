@@ -1,9 +1,44 @@
 package Data;
 
-import java.awt.image.BufferedImage;
+public class RenderData implements Comparable<RenderData> {
+    private final int x;
+    private final int y;
+    private final int z;
 
-public record RenderData(int x, int y, BufferedImage sprite) {
-    public String toString(){
-        return "x: " + x + "y: " + y;
+    public RenderData(int x, int y, RenderDepth z) {
+        this.x = x;
+        this.y = y;
+        this.z = z.ordinal();
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getZ() {
+        return z;
+    }
+
+    @Override
+    public String toString() {
+        return "RenderData{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
+
+    @Override
+    public int compareTo(RenderData o) {
+        if (getZ() == o.getZ()) {
+            return getY() - o.getY();
+        } else {
+            return getZ() - o.getZ();
+        }
     }
 }
+
