@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 public class Assets {
     public static BufferedImage[] idle_left, idle_right, move_left, move_right;
     public static BufferedImage[] tile_array;
+    public static BufferedImage[] BoxTile, BlankTile;
 
     public static void init() {
         SpriteSheet playerSprites = new SpriteSheet(ImageLoader.loadImage("/textures/char_kirby.png"));
@@ -17,6 +18,8 @@ public class Assets {
         move_left = new BufferedImage[8];
         move_right = new BufferedImage[8];
         tile_array = new BufferedImage[512];
+        BoxTile = new BufferedImage[1];
+        BlankTile = new BufferedImage[1];
 
         spriteHelper(idle_left, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
         spriteHelper(idle_right, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
@@ -30,6 +33,8 @@ public class Assets {
             }
         }
         tile_array[511] = new BufferedImage(16, 16, 1);
+        BoxTile[0] = tile_array[0];
+        BlankTile[0] = tile_array[511];
     }
 
     private static void spriteHelper(BufferedImage[] bufferedImages, SpriteSheet s, int x, int y, int width, int height, boolean flip) {

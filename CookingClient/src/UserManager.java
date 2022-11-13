@@ -16,7 +16,7 @@ public class UserManager {
         if (userMap.containsKey(eventPacket.uuid)) {
             updateUser(userMap.get(eventPacket.uuid), eventPacket);
         } else {
-            addNewUser(eventPacket.uuid, new User("닉네임임시"));
+            addNewUser(eventPacket.uuid, new User("닉네임임시", eventPacket.x, eventPacket.y));
         }
     }
 

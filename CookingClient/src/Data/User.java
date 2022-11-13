@@ -5,7 +5,7 @@ import Render.Assets;
 
 import java.awt.image.BufferedImage;
 
-public class User extends Object {
+public class User extends GameObject {
     private final String name;
     private final Animation animLeft;
     private final Animation animRight;
@@ -13,10 +13,11 @@ public class User extends Object {
     private final Animation animIdleRight;
     private boolean isLookRight = true;
 
-    public User(String name) {
+    public User(String name, int x, int y) {
+        super(x, y);
         this.name = name;
-        animLeft = new Animation(30, Assets.move_left);
-        animRight = new Animation(30, Assets.move_right);
+        animLeft = new Animation(50, Assets.move_left);
+        animRight = new Animation(50, Assets.move_right);
         animIdleLeft = new Animation(999, Assets.idle_left);
         animIdleRight = new Animation(999, Assets.idle_right);
     }
@@ -29,7 +30,6 @@ public class User extends Object {
         if (currentAnimation == null)
             return animIdleLeft.getCurrentFrame();
         else {
-            currentAnimation.update();
             return currentAnimation.getCurrentFrame();
         }
     }
