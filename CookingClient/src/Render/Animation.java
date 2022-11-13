@@ -7,7 +7,7 @@ public class Animation {
     private BufferedImage[] frames;
     private long lastTime, timer;
 
-    public Animation(int speed, BufferedImage[] frames) {
+    public Animation(int speed, BufferedImage[] frames) { // 여러장 애니메이션
         this.speed = speed;
         this.frames = frames;
         this.timer = 0;
@@ -15,7 +15,7 @@ public class Animation {
         this.lastTime = System.currentTimeMillis();
     }
 
-    public Animation(int speed, BufferedImage sprite) {
+    public Animation(int speed, BufferedImage sprite) { // 한장 애니메이션
         this.speed = speed;
         this.frames = new BufferedImage[1];
         this.frames[0] = sprite;

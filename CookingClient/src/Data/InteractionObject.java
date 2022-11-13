@@ -12,13 +12,13 @@ public class InteractionObject extends GameObject {
 
     public InteractionObject(int x, int y) {
         super(x, y);
-        this.idle = new Animation(99, Assets.tile_array[0]);
-        this.touched = new Animation(99, Assets.tile_array[22]);
+        this.idle = new Animation(99, Assets.tile_array[72]);
+        this.touched = new Animation(99, Assets.tile_array[99]);
         this.isSolid = true;
     }
 
     public void setTouched(boolean value) {
-        isTouched = true;
+        isTouched = value;
     }
 
     @Override
