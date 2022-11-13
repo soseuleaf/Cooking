@@ -5,12 +5,12 @@ import Data.Config;
 import java.awt.image.BufferedImage;
 
 public class Assets {
-    public static BufferedImage[] idle_left = new BufferedImage[1];
-    public static BufferedImage[] idle_right = new BufferedImage[1];
-    public static BufferedImage[] move_left = new BufferedImage[8];
-    public static BufferedImage[] move_right = new BufferedImage[8];
-    public static BufferedImage[] tile_array = new BufferedImage[512];
-    public static BufferedImage BlackTile = new BufferedImage(16, 16, 1);
+    public static BufferedImage[] CHARACTER_IDLE_LEFT = new BufferedImage[1];
+    public static BufferedImage[] CHARACTER_IDLE_RIGHT = new BufferedImage[1];
+    public static BufferedImage[] CHARACTER_MOVE_LEFT = new BufferedImage[8];
+    public static BufferedImage[] CHARACTER_MOVE_RIGHT = new BufferedImage[8];
+    public static BufferedImage[] TILEMAP = new BufferedImage[512];
+    public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
 
     public static void init() {
         loadCharacter();
@@ -19,18 +19,18 @@ public class Assets {
 
     private static void loadCharacter() {
         SpriteSheet playerSprites = new SpriteSheet(ImageLoader.loadImage("/textures/char_kirby.png"));
-        spriteHelper(idle_left, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
-        spriteHelper(idle_right, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
-        spriteHelper(move_left, playerSprites, 1, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
-        spriteHelper(move_right, playerSprites, 1, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
+        spriteHelper(CHARACTER_IDLE_LEFT, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
+        spriteHelper(CHARACTER_IDLE_RIGHT, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
+        spriteHelper(CHARACTER_MOVE_LEFT, playerSprites, 1, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
+        spriteHelper(CHARACTER_MOVE_RIGHT, playerSprites, 1, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
     }
 
     private static void loadTileMap() {
-        SpriteSheet tiles = new SpriteSheet(ImageLoader.loadImage("/textures/tile_pokemon.png"));
+        SpriteSheet tiles = new SpriteSheet(ImageLoader.loadImage("/textures/kitchen_tile.png"));
         int i = 0;
-        for (int y = 0; y < 15; y++) {
-            for (int x = 0; x < 18; x++) {
-                tile_array[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 5; x++) {
+                TILEMAP[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
             }
         }
     }

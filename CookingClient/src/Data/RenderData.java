@@ -24,15 +24,6 @@ public class RenderData implements Comparable<RenderData> {
     }
 
     @Override
-    public String toString() {
-        return "RenderData{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                '}';
-    }
-
-    @Override
     public int compareTo(RenderData o) {
         if (getZ() == o.getZ()) {
             return getY() - o.getY();

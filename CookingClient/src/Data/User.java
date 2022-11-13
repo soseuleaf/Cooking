@@ -5,21 +5,15 @@ import Render.Assets;
 
 import java.awt.image.BufferedImage;
 
-public class User extends GameObject {
-    private final String name;
-    private final Animation animLeft;
-    private final Animation animRight;
-    private final Animation animIdleLeft;
-    private final Animation animIdleRight;
+public class User extends Character {
     private boolean isLookRight = true;
 
     public User(String name, int x, int y) {
-        super(x, y);
-        this.name = name;
-        animLeft = new Animation(50, Assets.move_left);
-        animRight = new Animation(50, Assets.move_right);
-        animIdleLeft = new Animation(999, Assets.idle_left);
-        animIdleRight = new Animation(999, Assets.idle_right);
+        super(name, x, y);
+        animLeft = new Animation(50, Assets.CHARACTER_MOVE_LEFT);
+        animRight = new Animation(50, Assets.CHARACTER_MOVE_RIGHT);
+        animIdleLeft = new Animation(999, Assets.CHARACTER_IDLE_LEFT);
+        animIdleRight = new Animation(999, Assets.CHARACTER_IDLE_RIGHT);
     }
 
     public String getName() {
@@ -28,7 +22,7 @@ public class User extends GameObject {
 
     public BufferedImage getSprite() {
         if (currentAnimation == null)
-            return animIdleLeft.getCurrentFrame();
+            return Assets.BLACKTILE;
         else {
             return currentAnimation.getCurrentFrame();
         }

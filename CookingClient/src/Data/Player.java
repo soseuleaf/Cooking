@@ -1,31 +1,20 @@
 package Data;
 
-import Render.Animation;
 import Render.Assets;
 
 import java.awt.image.BufferedImage;
 
-public class Player extends GameObject {
+public class Player extends Character {
     private final int speed = 8;
-    private final String name;
-    private final Animation animLeft;
-    private final Animation animRight;
-    private final Animation animIdleLeft;
-    private final Animation animIdleRight;
-    private int moveX = 0;
-    private int moveY = 0;
+    private final int boundX = Config.TileSize - 32;
+    private final int boundY = 1;
+    private int moveX;
+    private int moveY;
     private boolean isLookRight = true;
-    private GameObject collisionObject = null;
+    private Object collisionObject = null;
 
     public Player() {
-        super(200, 200);
-        this.name = "ME";
-        this.boundX = Config.TileSize - 32;
-        this.boundY = 1;
-        animLeft = new Animation(50, Assets.move_left);
-        animRight = new Animation(50, Assets.move_right);
-        animIdleLeft = new Animation(999, Assets.idle_left);
-        animIdleRight = new Animation(999, Assets.idle_right);
+        super("ME", 200, 200);
     }
 
     public void setMoveX(int value) {
@@ -40,7 +29,7 @@ public class Player extends GameObject {
         return name;
     }
 
-    public void updateMove(GameObject[] aroundObject) {
+    public void updateMove(Object[] aroundObject) {
         if (moveX != 0 || moveY != 0) {
             collisionObject = null;
 
@@ -96,8 +85,8 @@ public class Player extends GameObject {
         }
     }
 
-    private boolean isCollision(GameObject other) { // 충돌 체크 함수
-        if (!other.isSolid) return false;
+    private boolean isCollision(Object other) { // 충돌 체크 함수
+        if (other == null || !other.isSolid()) return false;
 
         int thisCenterX = x + (Config.TileSize / 2);
         int thisCenterXLeft = thisCenterX - (boundX / 2);
@@ -105,31 +94,23 @@ public class Player extends GameObject {
         int thisCenterY = y + (Config.TileSize / 2);
         int thisCenterYUp = thisCenterY - (boundY / 2);
 
-        int otherCenterX = other.x + (Config.TileSize / 2);
-        int otherCenterXLeft = otherCenterX - (other.boundX / 2);
+        int otherCenterX = other.getX() + (Config.TileSize / 2);
+        int otherCenterXLeft = otherCenterX - (other.getBoundX() / 2);
 
-        int otherCenterY = other.y + (Config.TileSize / 2);
-        int otherCenterYUp = otherCenterY - (other.boundY / 2);
+        int otherCenterY = other.getY() + (Config.TileSize / 2);
+        int otherCenterYUp = otherCenterY - (other.getBoundY() / 2);
 
         return thisCenterXLeft + boundX >= otherCenterXLeft &&
-                thisCenterXLeft <= otherCenterXLeft + other.boundX &&
+                thisCenterXLeft <= otherCenterXLeft + other.getBoundX() &&
                 thisCenterYUp + boundY >= otherCenterYUp &&
-                thisCenterYUp <= otherCenterYUp + other.boundY;
+                thisCenterYUp <= otherCenterYUp + other.getBoundY();
     }
 
     @Override
     public BufferedImage getSprite() {
-        if (currentAnimation == null) return Assets.tile_array[511];
+        if (currentAnimation == null) return Assets.TILEMAP[511];
         else {
             return currentAnimation.getCurrentFrame();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Player{" +
-                "x=" + x +
-                ", y=" + y +
-                '}';
     }
 }

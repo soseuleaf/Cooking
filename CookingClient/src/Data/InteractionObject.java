@@ -5,16 +5,16 @@ import Render.Assets;
 
 import java.awt.image.BufferedImage;
 
-public class InteractionObject extends GameObject {
+public class InteractionObject extends Object {
     private boolean isTouched = false;
-    private Animation idle;
-    private Animation touched;
+    private boolean isUsed = false;
+    private final BufferedImage touchSprite;
+    private final Animation interaction;
 
-    public InteractionObject(int x, int y) {
-        super(x, y);
-        this.idle = new Animation(99, Assets.tile_array[72]);
-        this.touched = new Animation(99, Assets.tile_array[99]);
-        this.isSolid = true;
+    public InteractionObject(int x, int y, BufferedImage sprite, BufferedImage touchSprite) {
+        super(x, y, sprite, RenderDepth.OBJECT, true);
+        this.touchSprite = touchSprite;
+        this.interaction = new Animation(99, Assets.TILEMAP[99]);
     }
 
     public void setTouched(boolean value) {
@@ -23,16 +23,13 @@ public class InteractionObject extends GameObject {
 
     @Override
     public BufferedImage getSprite() {
-        if (isTouched) {
-            currentAnimation = touched;
+        if (isUsed) {
+            return interaction.getCurrentFrame();
+        } else if (isTouched) {
             isTouched = false;
+            return touchSprite;
         } else {
-            currentAnimation = idle;
-        }
-
-        if (currentAnimation == null) return Assets.tile_array[511];
-        else {
-            return currentAnimation.getCurrentFrame();
+            return sprite;
         }
     }
 }
