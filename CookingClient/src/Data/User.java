@@ -16,9 +16,7 @@ public class User extends Character {
         animIdleRight = new Animation(999, Assets.CHARACTER_IDLE_RIGHT);
     }
 
-    public String getName() {
-        return name;
-    }
+
 
     public BufferedImage getSprite() {
         if (currentAnimation == null)

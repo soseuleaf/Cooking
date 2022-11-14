@@ -50,8 +50,8 @@ public class Display {
                         data.getSprite(),
                         data.getX(),
                         data.getY(),
-                        Config.CharacterSize,
-                        Config.CharacterSize,
+                        data.getWidth(),
+                        data.getHeight(),
                         null
                 );
             } else if (renderDataItem instanceof StringRenderData data) {

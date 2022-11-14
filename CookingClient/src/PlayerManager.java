@@ -46,13 +46,14 @@ public class PlayerManager {
                     int tile = nonSolidScanner.nextInt();
 
                     if (floor != -1) {
-                        floorMap[y][x] = new Object(tileX, tileY, Assets.TILEMAP[floor], RenderDepth.FLOOR, false);
+                        floorMap[y][x] = new Object(tileX, tileY, Assets.TILEMAP[floor],RenderDepth.FLOOR, false);
                     }
                     if (tile != -1) {
-                        tileMap[y][x] = new Object(tileX, tileY, Assets.TILEMAP[tile], RenderDepth.FLOOR, false);
+                        tileMap[y][x] = new Object(tileX, tileY,Assets.TILEMAP[tile], RenderDepth.FLOOR, false);
                     }
                     if (object != -1) {
-                        objectMap[y][x] = new InteractionObject(tileX, tileY, Assets.TILEMAP[object], Assets.BLACKTILE);
+                        objectMap[y][x] = new InteractionObject(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[object], Assets.BLACKTILE);
+                        objectMap[y][x].setContainFood();
                     }
                 }
             }
@@ -90,14 +91,14 @@ public class PlayerManager {
         aroundObject[8] = objectMap[playerTileY + 1][playerTileX + 1];
 
         // 플레이더 데이터 업데이트
-        player.updateMove(aroundObject);
+        player.updateData(aroundObject);
 
         // 데이터 전송
         cookTogether.sendEventPacket(player.getX(), player.getY());
     }
 
     public void updateRender() {
-        cookTogether.addRenderData(new ImageRenderData(player.getX(), player.getY(), player.getSprite(), RenderDepth.OBJECT));
+        cookTogether.addRenderData(new ImageRenderData(player.getX(), player.getY(), Config.CharacterSize, Config.CharacterSize, player.getSprite(), RenderDepth.OBJECT));
         cookTogether.addRenderData(new StringRenderData(player.getX(), player.getY(), player.getName()));
 
         for (int y = 0; y < Config.MAP_Y; y++) {
@@ -107,15 +108,21 @@ public class PlayerManager {
                 Object object = objectMap[y][x];
 
                 if (floor != null) {
-                    cookTogether.addRenderData(new ImageRenderData(floor.getX(), floor.getY(), floor.getSprite(), floor.getDepth()));
+                    cookTogether.addRenderData(new ImageRenderData(floor.getX(), floor.getY(), floor.getWidth(), floor.getHeight(), floor.getSprite(), floor.getDepth()));
                 }
 
                 if (tile != null) {
-                    cookTogether.addRenderData(new ImageRenderData(tile.getX(), tile.getY(), tile.getSprite(), tile.getDepth()));
+                    cookTogether.addRenderData(new ImageRenderData(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight(), tile.getSprite(), tile.getDepth()));
                 }
 
                 if (object != null) {
-                    cookTogether.addRenderData(new ImageRenderData(object.getX(), object.getY(), object.getSprite(), object.getDepth()));
+                    cookTogether.addRenderData(new ImageRenderData(object.getX(), object.getY(), object.getWidth(), object.getHeight(), object.getSprite(), object.getDepth()));
+                    Food food = object.getFood();
+                    if(food != null){
+                        int foodX = object.getX() + (object.getWidth() / 2) - (food.getSize() / 2);
+                        int foodY = object.getY() + (object.getHeight() / 2) - (food.getSize() / 2);
+                        cookTogether.addRenderData(new ImageRenderData(foodX, foodY + 1, food.getSize(), food.getSize(), food.getSprite(), food.getDepth()));
+                    }
                 }
             }
         }

@@ -39,4 +39,8 @@ public abstract class Character {
     }
 
     public abstract BufferedImage getSprite();
+
+    public String getName() {
+        return name;
+    }
 }

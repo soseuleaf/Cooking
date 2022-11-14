@@ -25,11 +25,7 @@ public class Player extends Character {
         moveY = value * speed;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void updateMove(Object[] aroundObject) {
+    public void updateData(Object[] aroundObject) {
         if (moveX != 0 || moveY != 0) {
             collisionObject = null;
 

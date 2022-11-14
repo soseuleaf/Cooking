@@ -7,7 +7,6 @@ public class CookTogether implements Runnable {
     private Display display;
     private Network network;
     private boolean running;
-    private KeyEventData keyEventData;
     private PlayerManager playerManager;
     private UserManager userManager;
 
@@ -36,13 +35,15 @@ public class CookTogether implements Runnable {
     }
 
     private void update() {
-        // 키 데이터 전송
-        keyEventData = display.getKeyEventData();
+        // 키 데이터 전송 및 데이터 가공
+        KeyEventData keyEventData = display.getKeyEventData();
         playerManager.updateData(keyEventData);
 
-        // 데이터 가공
+        // 렌더링 데이터 추출
         playerManager.updateRender();
         userManager.updateRender();
+
+        // 렌더링 진행
         display.render();
     }
 

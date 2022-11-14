@@ -10,11 +10,19 @@ public class Assets {
     public static BufferedImage[] CHARACTER_MOVE_LEFT = new BufferedImage[8];
     public static BufferedImage[] CHARACTER_MOVE_RIGHT = new BufferedImage[8];
     public static BufferedImage[] TILEMAP = new BufferedImage[512];
+    public static BufferedImage[] TESTMAP = new BufferedImage[512];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
+    public static BufferedImage TEST;
 
     public static void init() {
         loadCharacter();
+        loadTest();
         loadTileMap();
+    }
+
+    private static void loadTest() {
+        SpriteSheet testSprite = new SpriteSheet(ImageLoader.loadImage("/textures/char_kirby.png"));
+        TEST = testSprite.crop(10 * Config.CharacterSpriteSize, 12 * Config.CharacterSpriteSize, Config.CharacterSpriteSize, Config.CharacterSpriteSize).build();
     }
 
     private static void loadCharacter() {

@@ -7,9 +7,14 @@ public class Object {
     private final int y;
     private final int boundX = Config.TileSize;
     private final int boundY = Config.TileSize;
+    private int width = Config.TileSize;
+    private int height = Config.TileSize;
     protected final BufferedImage sprite;
     private final RenderDepth depth;
     private final boolean solid;
+
+    protected boolean canPut = true;
+    protected Food containFood = null;
 
     public Object(int x, int y, BufferedImage sprite, RenderDepth depth, boolean solid) {
         this.x = x;
@@ -19,12 +24,25 @@ public class Object {
         this.solid = solid;
     }
 
+    protected void setSize(int width, int height){
+        this.width = width;
+        this.height = height;
+    }
+
+    public void setContainFood(){
+        containFood = new Food();
+    }
+
+    public Food getFood(){
+        return containFood;
+    }
+
     public int getX() {
-        return x;
+        return x + Config.TileSize - width;
     }
 
     public int getY() {
-        return y;
+        return y + Config.TileSize - height;
     }
 
     public int getBoundX() {
@@ -45,5 +63,13 @@ public class Object {
 
     public BufferedImage getSprite() {
         return sprite;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }

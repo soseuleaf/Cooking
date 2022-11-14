@@ -11,10 +11,11 @@ public class InteractionObject extends Object {
     private final BufferedImage touchSprite;
     private final Animation interaction;
 
-    public InteractionObject(int x, int y, BufferedImage sprite, BufferedImage touchSprite) {
+    public InteractionObject(int x, int y, int width, int height, BufferedImage sprite, BufferedImage touchSprite) {
         super(x, y, sprite, RenderDepth.OBJECT, true);
         this.touchSprite = touchSprite;
         this.interaction = new Animation(99, Assets.TILEMAP[99]);
+        setSize(width, height);
     }
 
     public void setTouched(boolean value) {

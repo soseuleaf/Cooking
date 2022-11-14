@@ -32,7 +32,7 @@ public class UserManager {
     public void updateRender() {
         for (UUID uuid : userMap.keySet()) {
             User user = userMap.get(uuid);
-            cookTogether.addRenderData(new ImageRenderData(user.getX(), user.getY(), user.getSprite(), user.getDepth()));
+            cookTogether.addRenderData(new ImageRenderData(user.getX(), user.getY(), Config.CharacterSize, Config.CharacterSize, user.getSprite(), user.getDepth()));
             cookTogether.addRenderData(new StringRenderData(user.getX(), user.getY(), user.getName()));
         }
     }
