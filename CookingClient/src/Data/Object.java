@@ -1,60 +1,55 @@
 package Data;
 
+import Render.Assets;
+
 import java.awt.image.BufferedImage;
 
-public class Object {
-    private final int x;
-    private final int y;
-    private final int boundX = Config.TileSize;
-    private final int boundY = Config.TileSize;
+public abstract class Object {
+    // 렌더링 좌표
+    protected int x;
+    protected int y;
+    private RenderDepth depth = RenderDepth.OBJECT;
+
+    // 이미지 사이즈
     private int width = Config.TileSize;
     private int height = Config.TileSize;
-    protected final BufferedImage sprite;
-    private final RenderDepth depth;
-    private final boolean solid;
 
-    protected boolean canPut = true;
-    protected Food containFood = null;
+    // 기본 스프라이트
+    private BufferedImage sprite = Assets.BLACKTILE;
 
-    public Object(int x, int y, BufferedImage sprite, RenderDepth depth, boolean solid) {
+
+    public Object(int x, int y) {
         this.x = x;
         this.y = y;
-        this.sprite = sprite;
-        this.depth = depth;
-        this.solid = solid;
     }
 
-    protected void setSize(int width, int height){
+    protected void setSize(int width, int height) {
         this.width = width;
         this.height = height;
     }
 
-    public void setContainFood(){
-        containFood = new Food();
+    protected void setDepth(RenderDepth depth) {
+        this.depth = depth;
     }
 
-    public Food getFood(){
-        return containFood;
+    protected void setSprite(BufferedImage sprite) {
+        this.sprite = sprite;
     }
 
     public int getX() {
-        return x + Config.TileSize - width;
+        return x;
     }
 
     public int getY() {
-        return y + Config.TileSize - height;
+        return y;
     }
 
-    public int getBoundX() {
-        return boundX;
+    public int getWidth() {
+        return width;
     }
 
-    public int getBoundY() {
-        return boundY;
-    }
-
-    public boolean isSolid() {
-        return solid;
+    public int getHeight() {
+        return height;
     }
 
     public RenderDepth getDepth() {
@@ -65,11 +60,5 @@ public class Object {
         return sprite;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
+    public abstract RenderData getImageRenderData();
 }

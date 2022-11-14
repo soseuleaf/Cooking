@@ -1,18 +1,19 @@
-import Data.Object;
 import Data.*;
+import Render.AssetLoader;
 import Render.Assets;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 public class PlayerManager {
     private final CookTogether cookTogether;
-    private final Player player;
-    private final Object[] aroundObject = new Object[9];
 
-    private final Object[][] floorMap = new Object[Config.MAP_Y][Config.MAP_X];
-    private final Object[][] tileMap = new Object[Config.MAP_Y][Config.MAP_X];
-    private final Object[][] objectMap = new Object[Config.MAP_Y][Config.MAP_X];
+    // 맵 관련
+    private final Block[] aroundObject = new Block[9];
+    private final Block[][] backgrondMap = new Block[Config.MAP_Y][Config.MAP_X];
+    private final InteractionBlock[][] objectMap = new InteractionBlock[Config.MAP_Y][Config.MAP_X];
+
+    // 플레이어 관련
+    private final Player player;
     private int playerTileX = 1;
     private int playerTileY = 1;
 
@@ -29,31 +30,24 @@ public class PlayerManager {
     private void loadWorld() {
         Scanner floorScanner;
         Scanner solidScanner;
-        Scanner nonSolidScanner;
 
         try {
-            floorScanner = new Scanner(Objects.requireNonNull(CookTogether.class.getResourceAsStream(Config.FLOORMAP)));
-            solidScanner = new Scanner(Objects.requireNonNull(CookTogether.class.getResourceAsStream(Config.SOLIDMAP)));
-            nonSolidScanner = new Scanner(Objects.requireNonNull(CookTogether.class.getResourceAsStream(Config.NONESOLIDMAP)));
+            floorScanner = new Scanner(AssetLoader.loadText(Config.BACKGROUNDMAP));
+            solidScanner = new Scanner(AssetLoader.loadText(Config.SOLIDMAP));
 
             for (int y = 0; y < Config.MAP_Y; y++) {
                 for (int x = 0; x < Config.MAP_X; x++) {
                     int tileX = Config.TileSize * x;
                     int tileY = Config.TileSize * y;
 
-                    int floor = floorScanner.nextInt();
-                    int object = solidScanner.nextInt();
-                    int tile = nonSolidScanner.nextInt();
+                    int backgrond = floorScanner.nextInt();
+                    int solid = solidScanner.nextInt();
 
-                    if (floor != -1) {
-                        floorMap[y][x] = new Object(tileX, tileY, Assets.TILEMAP[floor],RenderDepth.FLOOR, false);
+                    if (backgrond != -1) {
+                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], RenderDepth.MAP, false, true);
                     }
-                    if (tile != -1) {
-                        tileMap[y][x] = new Object(tileX, tileY,Assets.TILEMAP[tile], RenderDepth.FLOOR, false);
-                    }
-                    if (object != -1) {
-                        objectMap[y][x] = new InteractionObject(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[object], Assets.BLACKTILE);
-                        objectMap[y][x].setContainFood();
+                    if (solid != -1) {
+                        objectMap[y][x] = new InteractionBlock(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid]);
                     }
                 }
             }
@@ -72,8 +66,8 @@ public class PlayerManager {
         if (keyEventData.d()) player.setMoveX(1);
 
         // 충격의 충돌 처리 관련 계산
-        playerTileX = (player.getX() + (Config.CharacterSize / 2)) / Config.CharacterSize;
-        playerTileY = (player.getY() + (Config.CharacterSize / 2)) / Config.CharacterSize;
+        playerTileX = (player.getX() + (player.getWidth() / 2)) / player.getWidth();
+        playerTileY = (player.getY() + (player.getHeight() / 2)) / player.getHeight();
 
         if (playerTileY < 0) playerTileY = 0;
         if (playerTileY > Config.MAP_Y) playerTileY = Config.MAP_Y;
@@ -98,30 +92,26 @@ public class PlayerManager {
     }
 
     public void updateRender() {
-        cookTogether.addRenderData(new ImageRenderData(player.getX(), player.getY(), Config.CharacterSize, Config.CharacterSize, player.getSprite(), RenderDepth.OBJECT));
-        cookTogether.addRenderData(new StringRenderData(player.getX(), player.getY(), player.getName()));
+        cookTogether.addRenderData(player.getImageRenderData());
+        cookTogether.addRenderData(player.getStringRenderData());
 
         for (int y = 0; y < Config.MAP_Y; y++) {
             for (int x = 0; x < Config.MAP_X; x++) {
-                Object floor = floorMap[y][x];
-                Object tile = tileMap[y][x];
-                Object object = objectMap[y][x];
+                Block background = backgrondMap[y][x];
+                InteractionBlock object = objectMap[y][x];
 
-                if (floor != null) {
-                    cookTogether.addRenderData(new ImageRenderData(floor.getX(), floor.getY(), floor.getWidth(), floor.getHeight(), floor.getSprite(), floor.getDepth()));
-                }
-
-                if (tile != null) {
-                    cookTogether.addRenderData(new ImageRenderData(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight(), tile.getSprite(), tile.getDepth()));
+                if (background != null) {
+                    cookTogether.addRenderData(background.getImageRenderData());
                 }
 
                 if (object != null) {
-                    cookTogether.addRenderData(new ImageRenderData(object.getX(), object.getY(), object.getWidth(), object.getHeight(), object.getSprite(), object.getDepth()));
-                    Food food = object.getFood();
-                    if(food != null){
-                        int foodX = object.getX() + (object.getWidth() / 2) - (food.getSize() / 2);
-                        int foodY = object.getY() + (object.getHeight() / 2) - (food.getSize() / 2);
-                        cookTogether.addRenderData(new ImageRenderData(foodX, foodY + 1, food.getSize(), food.getSize(), food.getSprite(), food.getDepth()));
+                    cookTogether.addRenderData(object.getImageRenderData());
+                    if (object.isTouch()) {
+                        cookTogether.addRenderData(object.getTouchRenderData());
+                    }
+                    if (object.isHoldFood()) {
+                        cookTogether.addRenderData(object.peekFood().getImageRenderData());
+                        cookTogether.addRenderData(object.peekFood().getStringRenderData());
                     }
                 }
             }

@@ -4,31 +4,33 @@ import Render.Assets;
 
 import java.awt.image.BufferedImage;
 
-public class Food {
+public class Food extends Object {
     private int id = 1;
-    private int size = Config.TileSize;
-    private RenderDepth depth = RenderDepth.OBJECT;
     boolean isOriginal = true;
     boolean isFire = false;
     boolean isKnife = false;
-    BufferedImage sprite = Assets.TEST;
+    BufferedImage sprite;
 
-    public Food(){
+    public Food() {
+        super(0, 0);
+        setSprite(Assets.TEST);
     }
 
     public int getId() {
         return id;
     }
 
-    public int getSize() {
-        return size;
+    public void setParentPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public BufferedImage getSprite() {
-        return sprite;
+    public RenderData getStringRenderData() {
+        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), Integer.toString(id));
     }
 
-    public RenderDepth getDepth() {
-        return depth;
+    @Override
+    public RenderData getImageRenderData() {
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), getSprite(), getDepth());
     }
 }

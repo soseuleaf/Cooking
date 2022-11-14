@@ -13,7 +13,8 @@ public class Config {
     public final static int FPS = 30;
 
     // MAP
-    public final static String FLOORMAP = "worlds/floors.txt";
-    public final static String NONESOLIDMAP = "worlds/non_solid.txt";
-    public final static String SOLIDMAP = "worlds/solid.txt";
+    public final static String TILEMAP = "/textures/tile.png";
+    public final static String CHARACTERSPRITE = "/textures/char_kirby.png";
+    public final static String BACKGROUNDMAP = "/worlds/background.txt";
+    public final static String SOLIDMAP = "/worlds/solid.txt";
 }

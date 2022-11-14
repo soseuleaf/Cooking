@@ -21,12 +21,12 @@ public class Assets {
     }
 
     private static void loadTest() {
-        SpriteSheet testSprite = new SpriteSheet(ImageLoader.loadImage("/textures/char_kirby.png"));
+        SpriteSheet testSprite = new SpriteSheet(AssetLoader.loadImage(Config.CHARACTERSPRITE));
         TEST = testSprite.crop(10 * Config.CharacterSpriteSize, 12 * Config.CharacterSpriteSize, Config.CharacterSpriteSize, Config.CharacterSpriteSize).build();
     }
 
     private static void loadCharacter() {
-        SpriteSheet playerSprites = new SpriteSheet(ImageLoader.loadImage("/textures/char_kirby.png"));
+        SpriteSheet playerSprites = new SpriteSheet(AssetLoader.loadImage(Config.CHARACTERSPRITE));
         spriteHelper(CHARACTER_IDLE_LEFT, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
         spriteHelper(CHARACTER_IDLE_RIGHT, playerSprites, 0, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, false);
         spriteHelper(CHARACTER_MOVE_LEFT, playerSprites, 1, 0, Config.CharacterSpriteSize, Config.CharacterSpriteSize, true);
@@ -34,9 +34,9 @@ public class Assets {
     }
 
     private static void loadTileMap() {
-        SpriteSheet tiles = new SpriteSheet(ImageLoader.loadImage("/textures/kitchen_tile.png"));
+        SpriteSheet tiles = new SpriteSheet(AssetLoader.loadImage(Config.TILEMAP));
         int i = 0;
-        for (int y = 0; y < 4; y++) {
+        for (int y = 0; y < 5; y++) {
             for (int x = 0; x < 5; x++) {
                 TILEMAP[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
             }

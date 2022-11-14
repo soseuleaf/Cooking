@@ -16,12 +16,12 @@ public class UserManager {
         if (userMap.containsKey(eventPacket.uuid)) {
             updateUser(userMap.get(eventPacket.uuid), eventPacket);
         } else {
-            addNewUser(eventPacket.uuid, new User("닉네임임시", eventPacket.x, eventPacket.y));
+            addNewUser(eventPacket.uuid, new User(eventPacket.x, eventPacket.y, "닉네임임시"));
         }
     }
 
     private void updateUser(User user, EventPacket eventPacket) {
-        user.setEvent(eventPacket);
+        user.bindEvent(eventPacket);
         userMap.put(eventPacket.uuid, user);
     }
 
@@ -32,8 +32,8 @@ public class UserManager {
     public void updateRender() {
         for (UUID uuid : userMap.keySet()) {
             User user = userMap.get(uuid);
-            cookTogether.addRenderData(new ImageRenderData(user.getX(), user.getY(), Config.CharacterSize, Config.CharacterSize, user.getSprite(), user.getDepth()));
-            cookTogether.addRenderData(new StringRenderData(user.getX(), user.getY(), user.getName()));
+            cookTogether.addRenderData(user.getImageRenderData());
+            cookTogether.addRenderData(user.getStringRenderData());
         }
     }
 }
