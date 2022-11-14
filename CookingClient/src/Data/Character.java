@@ -13,6 +13,7 @@ public abstract class Character extends Object {
     protected Animation animIdleLeft = new Animation(999, Assets.CHARACTER_IDLE_LEFT);
     protected Animation animIdleRight = new Animation(999, Assets.CHARACTER_IDLE_RIGHT);
     protected Animation currentAnimation = null;
+    protected Food holdFood = null;
 
     public Character(int x, int y, String name) {
         super(x, y);
@@ -21,6 +22,29 @@ public abstract class Character extends Object {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isHoldFood() {
+        return holdFood != null;
+    }
+
+    public boolean addFood(Food food) {
+        if (!isHoldFood()) {
+            holdFood = food;
+            holdFood.setParentPosition(x, y, true);
+            return true;
+        }
+        return false;
+    }
+
+    public Food peekFood() {
+        return holdFood;
+    }
+
+    public Food popFood() {
+        Food food = holdFood;
+        holdFood = null;
+        return food;
     }
 
     public RenderData getStringRenderData() {

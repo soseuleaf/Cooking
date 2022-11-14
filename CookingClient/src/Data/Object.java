@@ -44,6 +44,14 @@ public abstract class Object {
         return y;
     }
 
+    public int getTileX() {
+        return (x + width / 2) / width;
+    }
+
+    public int getTileY() {
+        return (y + height / 2) / height;
+    }
+
     public int getWidth() {
         return width;
     }

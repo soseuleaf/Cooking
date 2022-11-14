@@ -1,8 +1,11 @@
 package Render;
 
 import Data.Config;
+import Data.Food;
+import Data.FoodType;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class Assets {
     public static BufferedImage[] CHARACTER_IDLE_LEFT = new BufferedImage[1];
@@ -13,11 +16,20 @@ public class Assets {
     public static BufferedImage[] TESTMAP = new BufferedImage[512];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
     public static BufferedImage TEST;
+    public static BufferedImage APPLE;
+    public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
         loadCharacter();
         loadTest();
         loadTileMap();
+        initFood();
+    }
+
+    private static void initFood() {
+        for (FoodType type : FoodType.values()) {
+            FOODLIST.add(new Food(type, TEST));
+        }
     }
 
     private static void loadTest() {

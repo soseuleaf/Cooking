@@ -7,7 +7,7 @@ public class CookTogether implements Runnable {
     private Display display;
     private Network network;
     private boolean running;
-    private PlayerManager playerManager;
+    private PlayManager playManager;
     private UserManager userManager;
 
     public CookTogether() {
@@ -20,16 +20,31 @@ public class CookTogether implements Runnable {
     }
 
     public void sendEventPacket(int x, int y) {
-        network.sendMovePacket(EventEnum.MOVE, "Move", x, y);
+        network.sendMovePacket("Move", x, y);
     }
 
-    public void recvEventPacket(EventPacket eventPacket) {
+    public void sendFoodPacket(EventEnum code, int y, int x) {
+        network.sendFoodPacket(code, y, x);
+    }
+
+    public void recvPacket(EventPacket eventPacket) {
         userManager.recvEventPacket(eventPacket);
+    }
+
+    public void recvPacket(FoodPacket foodPacket) {
+        Food food;
+        if (foodPacket.code == EventEnum.FOOD_PUT) {
+            food = playManager.popFoodInMap(foodPacket.y, foodPacket.x);
+            userManager.addFoodByUser(foodPacket.uuid, food);
+        } else if (foodPacket.code == EventEnum.FOOD_DOWN) {
+            food = userManager.popFoodByUser(foodPacket.uuid);
+            playManager.addFoodInMap(foodPacket.y, foodPacket.x, food);
+        }
     }
 
     private void init() {
         this.display = new Display(this);
-        this.playerManager = new PlayerManager(this);
+        this.playManager = new PlayManager(this);
         this.network = new Network(this, "Test", "127.0.0.1", "30000");
         this.userManager = new UserManager(this);
     }
@@ -37,10 +52,11 @@ public class CookTogether implements Runnable {
     private void update() {
         // 키 데이터 전송 및 데이터 가공
         KeyEventData keyEventData = display.getKeyEventData();
-        playerManager.updateData(keyEventData);
+        if (keyEventData == null) keyEventData = new KeyEventData(false, false, false, false, false);
+        playManager.updateData(keyEventData);
 
         // 렌더링 데이터 추출
-        playerManager.updateRender();
+        playManager.updateRender();
         userManager.updateRender();
 
         // 렌더링 진행

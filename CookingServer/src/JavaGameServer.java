@@ -1,7 +1,7 @@
 //JavaObjServer.java ObjectStream 기반 채팅 Server
 
-import Data.EventEnum;
 import Data.EventPacket;
+import Data.FoodPacket;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -86,8 +86,8 @@ public class JavaGameServer extends JFrame {
         textArea.setCaretPosition(textArea.getText().length());
     }
 
-    public void AppendObject(EventPacket msg) {
-        textArea.append("code = " + msg.code + "id = " + msg.uuid.toString() + "data = " + msg.data + " x: " + msg.x + " y: " + msg.y);
+    public void AppendObject(FoodPacket packet) {
+        textArea.append("code = " + packet.code + "id = " + packet.uuid.toString() + " x: " + packet.x + " y: " + packet.y);
         textArea.append("\n");
         textArea.setCaretPosition(textArea.getText().length());
     }
@@ -187,36 +187,36 @@ public class JavaGameServer extends JFrame {
         public void run() {
             while (true) {
                 try {
-                    Object obcm = null;
-                    String msg = null;
-                    EventPacket cm = null;
-                    if (socket == null)
-                        break;
+                    // 선언 및 객체 읽고 에러 처리
+                    Object obcm;
+                    if (socket == null) break;
                     try {
                         obcm = ois.readObject();
+                        if (obcm == null) break;
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                         return;
                     }
-                    if (obcm == null)
-                        break;
-                    if (obcm instanceof EventPacket) {
-                        cm = (EventPacket) obcm;
-                        AppendObject(cm);
-                    } else
-                        continue;
-                    if (cm.code == EventEnum.CONNECT) {
-                        uuid = cm.uuid;
-                        UserStatus = "O"; // Online 상태
-                        Login();
-                    } else if (cm.code == EventEnum.MOVE) {
-                        msg = String.format("[%s] %s", cm.uuid.toString(), cm.data);
-                        WriteOtherObject(cm);
-                    } else if (cm.code == EventEnum.ACTION) {
-                        Logout();
-                        break;
-                    } else {
-                        WriteAllObject(cm);
+
+                    // 패킷 판단하고 전달
+                    if (obcm instanceof EventPacket packet) {
+                        switch (packet.code) {
+                            case CONNECT -> {
+                                uuid = packet.uuid;
+                                UserStatus = "O"; // Online 상태
+                                Login();
+                            }
+                            case MOVE -> WriteOtherObject(packet);
+                            //case ACTION -> TODO: 잘못 만든거 같은데 언제가 씀?
+                            default -> System.out.println("Unknown Packet");
+                        }
+
+                    } else if (obcm instanceof FoodPacket packet) {
+                        switch (packet.code) {
+                            case FOOD_PUT, FOOD_DOWN -> WriteOtherObject(packet);
+                            default -> System.out.println("Unknown Packet");
+                        }
+                        AppendObject(packet);
                     }
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");

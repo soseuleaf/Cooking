@@ -4,10 +4,19 @@ public class Player extends Character {
     private final int speed = 8;
     private int moveX;
     private int moveY;
+    private boolean onSpace = false;
     private Block collisionBlock = null;
+    private long actionCooltimeMax = 1000;
+    private long actionCooltime = 0;
+    private long messageBoxTimeMax = 1000;
+    private long messageBoxTime = 0;
+    private String message = null;
+    private long actionLastTime = 0;
+    private long messageLastTime = 0;
+
 
     public Player() {
-        super(200, 200, "ME");
+        super(300, 200, "ME");
     }
 
     public void setMoveX(int value) {
@@ -18,7 +27,15 @@ public class Player extends Character {
         moveY = value * speed;
     }
 
-    public void updateData(Block[] aroundBox) {
+    public int collisionBlockTileX() {
+        return collisionBlock.getTileX();
+    }
+
+    public int collisionBlockTileY() {
+        return collisionBlock.getTileY();
+    }
+
+    public EventEnum updateData(Block[] aroundBox) {
         if (moveX != 0 || moveY != 0) {
             collisionBlock = null;
 
@@ -39,20 +56,66 @@ public class Player extends Character {
                     break;
                 }
             }
+
+            if (isHoldFood()) peekFood().setParentPosition(x, y, true);
         }
 
         if (collisionBlock instanceof InteractionBlock interactionObject) {
             interactionObject.setTouch(true);
         }
 
-        // 굳이 여기서 애니메이션 처리를 하는 이유는 movexy를 zero로 하면 updateAnimation에서 애니메이션을 못 찾음
-        updateAnimation();
-        setMoveZero();
+        if (onSpace && (collisionBlock != null)) {
+            onSpace = false;
+            if (collisionBlock.canHold && collisionBlock.isHoldFood() && !this.isHoldFood()) {
+                Food food = collisionBlock.popFood();
+                this.addFood(food);
+                return EventEnum.FOOD_PUT;
+            } else if (collisionBlock.canHold && !collisionBlock.isHoldFood() && this.isHoldFood()) {
+                Food food = this.popFood();
+                collisionBlock.addFood(food);
+                return EventEnum.FOOD_DOWN;
+            } else if (collisionBlock.isHoldFood() && this.isHoldFood()) {
+                addMessage("이미 물건을 들고 있어");
+            }
+        }
+
+        return EventEnum.NONE;
     }
 
-    public void setMoveZero() {
-        moveX = 0;
-        moveY = 0;
+    public void onSpace(boolean space) {
+        actionCooltime += System.currentTimeMillis() - actionLastTime;
+        actionLastTime = System.currentTimeMillis();
+
+        if (actionCooltime > actionCooltimeMax) {
+            actionCooltime = 0;
+            onSpace = space;
+        } else if (actionCooltime > actionCooltimeMax / 2) { // 너무 민감해서 일정 시간이상 지났을 때만 작동
+            addMessage("조금만 더 기다려줘.");
+        }
+    }
+
+    private void addMessage(String message) {
+        this.message = message;
+        messageBoxTime = 0;
+    }
+
+    public void controlMessageBox() {
+        if (message != null) {
+            messageBoxTime += System.currentTimeMillis() - messageLastTime;
+            messageLastTime = System.currentTimeMillis();
+            if (messageBoxTime > messageBoxTimeMax) {
+                messageBoxTime = 0;
+                message = null;
+            }
+        }
+    }
+
+    public boolean canMessageRender() {
+        return message != null;
+    }
+
+    public RenderData getMessageRenderData() {
+        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight() - Config.TileSize / 2, message);
     }
 
     public void updateAnimation() {
@@ -77,7 +140,7 @@ public class Player extends Character {
     private boolean isCollision(Block other) { // 충돌 체크 함수
         if (other == null || !other.isSolid()) return false;
 
-        int boundX = Config.TileSize - 32;
+        int boundX = Config.TileSize - 16;
         int boundY = 2;
 
         int thisCenterX = x + (getWidth() / 2);

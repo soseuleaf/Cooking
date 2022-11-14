@@ -22,7 +22,6 @@ public class UserManager {
 
     private void updateUser(User user, EventPacket eventPacket) {
         user.bindEvent(eventPacket);
-        userMap.put(eventPacket.uuid, user);
     }
 
     private void addNewUser(UUID uuid, User user) {
@@ -34,6 +33,22 @@ public class UserManager {
             User user = userMap.get(uuid);
             cookTogether.addRenderData(user.getImageRenderData());
             cookTogether.addRenderData(user.getStringRenderData());
+
+            if (user.isHoldFood()) {
+                Food food = user.peekFood();
+                food.setParentPosition(user.getX(), user.getY(), true);
+                cookTogether.addRenderData(food.getImageRenderData());
+            }
         }
+    }
+
+    public void addFoodByUser(UUID uuid, Food food) {
+        if (userMap.containsKey(uuid)) {
+            userMap.get(uuid).addFood(food);
+        }
+    }
+
+    public Food popFoodByUser(UUID uuid) {
+        return userMap.get(uuid).popFood();
     }
 }

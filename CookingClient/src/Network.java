@@ -1,5 +1,6 @@
 import Data.EventEnum;
 import Data.EventPacket;
+import Data.FoodPacket;
 
 import java.io.*;
 import java.net.Socket;
@@ -37,7 +38,6 @@ public class Network implements Serializable {
         public void run() {
             Object obcm;
             String msg;
-            EventPacket cm;
 
             while (true) {
                 try {
@@ -49,10 +49,13 @@ public class Network implements Serializable {
                 if (obcm == null) {
                     break;
                 }
-                if (obcm instanceof EventPacket) {
-                    cm = (EventPacket) obcm;
-                    cookTogether.recvEventPacket(cm);
-                    msg = String.format("[%s] %s", cm.uuid.toString(), cm.data);
+                if (obcm instanceof EventPacket packet) {
+                    cookTogether.recvPacket(packet);
+                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
+                    //System.out.println(msg);
+                } else if (obcm instanceof FoodPacket packet) {
+                    cookTogether.recvPacket(packet);
+                    msg = String.format("[%s] %s", packet.uuid.toString(), packet.code, packet.x, packet.y);
                     System.out.println(msg);
                 } else {
                     System.out.println("Unknown Packet");
@@ -65,8 +68,12 @@ public class Network implements Serializable {
         sendObject(new EventPacket(uuid, EventEnum.CONNECT, "Hello", 0, 0));
     }
 
-    public void sendMovePacket(EventEnum code, String message, int x, int y) {
-        sendObject(new EventPacket(uuid, code, message, x, y));
+    public void sendMovePacket(String message, int x, int y) {
+        sendObject(new EventPacket(uuid, EventEnum.MOVE, message, x, y));
+    }
+
+    public void sendFoodPacket(EventEnum code, int y, int x) {
+        sendObject(new FoodPacket(uuid, code, y, x));
     }
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드

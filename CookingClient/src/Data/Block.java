@@ -39,7 +39,7 @@ public class Block extends Object {
     public boolean addFood(Food food) {
         if (!isHoldFood()) {
             holdFood = food;
-            holdFood.setParentPosition(x, y);
+            holdFood.setParentPosition(x, y, false);
             return true;
         }
         return false;

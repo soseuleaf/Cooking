@@ -4,20 +4,21 @@ import Render.Assets;
 
 import java.util.Scanner;
 
-public class PlayerManager {
+public class PlayManager {
+    // 오브젝트 넘기기 위해 저장
     private final CookTogether cookTogether;
 
     // 맵 관련
     private final Block[] aroundObject = new Block[9];
     private final Block[][] backgrondMap = new Block[Config.MAP_Y][Config.MAP_X];
-    private final InteractionBlock[][] objectMap = new InteractionBlock[Config.MAP_Y][Config.MAP_X];
+    private final Block[][] objectMap = new Block[Config.MAP_Y][Config.MAP_X];
 
     // 플레이어 관련
     private final Player player;
     private int playerTileX = 1;
     private int playerTileY = 1;
 
-    public PlayerManager(CookTogether cookTogether) {
+    public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
         this.player = new Player();
         initMap();
@@ -47,7 +48,12 @@ public class PlayerManager {
                         backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], RenderDepth.MAP, false, true);
                     }
                     if (solid != -1) {
-                        objectMap[y][x] = new InteractionBlock(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid]);
+                        if (y < 11) {
+                            objectMap[y][x] = new InteractionBlock(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid]);
+                            objectMap[y][x].addFood(Assets.FOODLIST.get(0).clone());
+                        } else {
+                            objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid], RenderDepth.OBJECT, true, false);
+                        }
                     }
                 }
             }
@@ -59,15 +65,15 @@ public class PlayerManager {
 
     public void updateData(KeyEventData keyEventData) {
         // 키 입력 전송
-        if (keyEventData == null) return;
         if (keyEventData.w()) player.setMoveY(-1);
         if (keyEventData.a()) player.setMoveX(-1);
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
+        if (keyEventData.space()) player.onSpace(true);
 
         // 충격의 충돌 처리 관련 계산
-        playerTileX = (player.getX() + (player.getWidth() / 2)) / player.getWidth();
-        playerTileY = (player.getY() + (player.getHeight() / 2)) / player.getHeight();
+        playerTileX = player.getTileX();
+        playerTileY = player.getTileY();
 
         if (playerTileY < 0) playerTileY = 0;
         if (playerTileY > Config.MAP_Y) playerTileY = Config.MAP_Y;
@@ -84,37 +90,67 @@ public class PlayerManager {
         aroundObject[7] = objectMap[playerTileY + 1][playerTileX];
         aroundObject[8] = objectMap[playerTileY + 1][playerTileX + 1];
 
-        // 플레이더 데이터 업데이트
-        player.updateData(aroundObject);
+        // 플레이어 데이터 업데이트
+        switch (player.updateData(aroundObject)) { // 아무튼 스페이스바 클릭으로 이벤트가 발생했다면
+            case FOOD_PUT ->
+                    cookTogether.sendFoodPacket(EventEnum.FOOD_PUT, player.collisionBlockTileY(), player.collisionBlockTileX());
+            case FOOD_DOWN ->
+                    cookTogether.sendFoodPacket(EventEnum.FOOD_DOWN, player.collisionBlockTileY(), player.collisionBlockTileX());
+        }
+        player.updateAnimation();
+        player.controlMessageBox();
 
         // 데이터 전송
         cookTogether.sendEventPacket(player.getX(), player.getY());
+
+        // 데이터 정리
+        player.setMoveX(0);
+        player.setMoveY(0);
     }
 
     public void updateRender() {
         cookTogether.addRenderData(player.getImageRenderData());
         cookTogether.addRenderData(player.getStringRenderData());
 
+        if (player.isHoldFood()) {
+            cookTogether.addRenderData(player.peekFood().getImageRenderData());
+        }
+        if (player.canMessageRender()) {
+            cookTogether.addRenderData(player.getMessageRenderData());
+        }
+
         for (int y = 0; y < Config.MAP_Y; y++) {
             for (int x = 0; x < Config.MAP_X; x++) {
                 Block background = backgrondMap[y][x];
-                InteractionBlock object = objectMap[y][x];
+                Block object = objectMap[y][x];
 
                 if (background != null) {
                     cookTogether.addRenderData(background.getImageRenderData());
                 }
 
                 if (object != null) {
-                    cookTogether.addRenderData(object.getImageRenderData());
-                    if (object.isTouch()) {
-                        cookTogether.addRenderData(object.getTouchRenderData());
-                    }
-                    if (object.isHoldFood()) {
-                        cookTogether.addRenderData(object.peekFood().getImageRenderData());
-                        cookTogether.addRenderData(object.peekFood().getStringRenderData());
+                    if (object instanceof InteractionBlock obj) {
+                        cookTogether.addRenderData(obj.getImageRenderData());
+                        if (obj.isTouch()) {
+                            cookTogether.addRenderData(obj.getTouchRenderData());
+                        }
+                        if (obj.isHoldFood()) {
+                            cookTogether.addRenderData(obj.peekFood().getImageRenderData());
+                            cookTogether.addRenderData(obj.peekFood().getStringRenderData());
+                        }
+                    } else {
+                        cookTogether.addRenderData(object.getImageRenderData());
                     }
                 }
             }
         }
+    }
+
+    public void addFoodInMap(int y, int x, Food food) {
+        objectMap[y][x].addFood(food);
+    }
+
+    public Food popFoodInMap(int y, int x) {
+        return objectMap[y][x].popFood();
     }
 }
