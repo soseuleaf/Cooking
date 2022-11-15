@@ -39,6 +39,9 @@ public class CookTogether implements Runnable {
         } else if (foodPacket.code == EventEnum.FOOD_DOWN) {
             food = userManager.popFoodByUser(foodPacket.uuid);
             playManager.addFoodInMap(foodPacket.y, foodPacket.x, food);
+        } else if (foodPacket.code == EventEnum.FOOD_GET) {
+            food = playManager.getFoodByMap(foodPacket.y, foodPacket.x);
+            userManager.addFoodByUser(foodPacket.uuid, food);
         }
     }
 

@@ -2,39 +2,38 @@ package Data;
 
 import Render.Animation;
 import Render.Assets;
+import lombok.Getter;
 
 import java.awt.image.BufferedImage;
 
 public abstract class Character extends Object {
-    protected boolean isLookRight = true;
+    @Getter
     private final String name;
+    protected Food holdFood = null;
+    protected boolean isLookRight = true;
     protected Animation animLeft = new Animation(50, Assets.CHARACTER_MOVE_LEFT);
     protected Animation animRight = new Animation(50, Assets.CHARACTER_MOVE_RIGHT);
     protected Animation animIdleLeft = new Animation(999, Assets.CHARACTER_IDLE_LEFT);
     protected Animation animIdleRight = new Animation(999, Assets.CHARACTER_IDLE_RIGHT);
     protected Animation currentAnimation = null;
-    protected Food holdFood = null;
+
 
     public Character(int x, int y, String name) {
-        super(x, y);
+        super(x, y, Config.TileSize, Config.TileSize, Assets.CHARACTER_IDLE_LEFT[0], RenderDepth.OBJECT);
         this.name = name;
     }
 
-    public String getName() {
-        return name;
+    public boolean canHold() {
+        return holdFood == null;
     }
 
-    public boolean isHoldFood() {
+    public boolean isHold() {
         return holdFood != null;
     }
 
-    public boolean addFood(Food food) {
-        if (!isHoldFood()) {
-            holdFood = food;
-            holdFood.setParentPosition(x, y, true);
-            return true;
-        }
-        return false;
+    public void addFood(Food food) {
+        holdFood = food;
+        holdFood.setParentPosition(x, y, true);
     }
 
     public Food peekFood() {

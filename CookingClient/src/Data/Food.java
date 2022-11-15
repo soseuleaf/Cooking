@@ -2,41 +2,32 @@ package Data;
 
 import Render.Assets;
 
-import java.awt.image.BufferedImage;
 
 public class Food extends Object implements Cloneable {
-    private int id;
-    private String name;
-    boolean isOriginal = true;
-    boolean isFire = false;
-    boolean isKnife = false;
+    private final FoodType foodType;
     boolean isCharacter = false;
-    BufferedImage sprite;
 
-    public Food(FoodType food, BufferedImage sprite) {
-        super(0, 0);
-        this.id = food.getIndex();
-        this.name = food.getName();
-        setSprite(sprite);
+    public Food(FoodType foodType) {
+        super(0, 0, Config.TileSize, Config.TileSize, Assets.DISHMAP[foodType.getSpriteNum()], RenderDepth.UI);
+        this.foodType = foodType;
     }
 
     public int getId() {
-        return id;
+        return foodType.ordinal();
     }
 
     public String getName() {
-        return name;
+        return foodType.getName();
     }
 
     public void setParentPosition(int x, int y, boolean isCharacter) {
         this.x = x;
         this.y = y;
         this.isCharacter = isCharacter;
-
     }
 
     public RenderData getStringRenderData() {
-        return new StringRenderData(x + Config.TileSize - getWidth() + 10, y + Config.TileSize - 10, Integer.toString(id));
+        return new StringRenderData(x + Config.TileSize - getWidth() + 10, y + Config.TileSize - 10, Integer.toString(getId()));
     }
 
     @Override
@@ -45,10 +36,11 @@ public class Food extends Object implements Cloneable {
             return (Food) super.clone();
         } catch (Exception e) {
             System.out.println(e);
-            return new Food(FoodType.TEST, Assets.TEST);
+            return new Food(FoodType.TEST);
         }
     }
 
+    // 플레이어가 들 때와 블록위에 두었을 때 이미지를 다르게 설정 함.
     @Override
     public RenderData getImageRenderData() {
         if (isCharacter) {

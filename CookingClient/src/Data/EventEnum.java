@@ -6,5 +6,6 @@ public enum EventEnum {
     MOVE,
     ACTION,
     FOOD_PUT,
-    FOOD_DOWN
+    FOOD_DOWN,
+    FOOD_GET,
 }

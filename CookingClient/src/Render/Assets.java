@@ -13,28 +13,36 @@ public class Assets {
     public static BufferedImage[] CHARACTER_MOVE_LEFT = new BufferedImage[8];
     public static BufferedImage[] CHARACTER_MOVE_RIGHT = new BufferedImage[8];
     public static BufferedImage[] TILEMAP = new BufferedImage[512];
-    public static BufferedImage[] TESTMAP = new BufferedImage[512];
+    public static BufferedImage[] DISHMAP = new BufferedImage[512];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
-    public static BufferedImage TEST;
-    public static BufferedImage APPLE;
+    public static BufferedImage sodwkdrh;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
         loadCharacter();
-        loadTest();
         loadTileMap();
+
+        sodwkdrh = AssetLoader.loadImage("/textures/sodwkdrh.png");
+
+        // 음식 관련
+        loadFood();
         initFood();
     }
 
     private static void initFood() {
         for (FoodType type : FoodType.values()) {
-            FOODLIST.add(new Food(type, TEST));
+            FOODLIST.add(new Food(type));
         }
     }
 
-    private static void loadTest() {
-        SpriteSheet testSprite = new SpriteSheet(AssetLoader.loadImage(Config.CHARACTERSPRITE));
-        TEST = testSprite.crop(10 * Config.CharacterSpriteSize, 12 * Config.CharacterSpriteSize, Config.CharacterSpriteSize, Config.CharacterSpriteSize).build();
+    private static void loadFood() {
+        SpriteSheet dishSprite = new SpriteSheet(AssetLoader.loadImage(Config.DISHMAP));
+        for (int i = 0, y = 0; y < 11; y++) {
+            for (int x = 0; x < 10; x++, i++) {
+                DISHMAP[i] = dishSprite.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
+            }
+        }
+
     }
 
     private static void loadCharacter() {

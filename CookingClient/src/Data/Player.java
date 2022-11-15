@@ -6,14 +6,13 @@ public class Player extends Character {
     private int moveY;
     private boolean onSpace = false;
     private Block collisionBlock = null;
-    private long actionCooltimeMax = 1000;
+    private final long actionCooltimeMax = 1000;
     private long actionCooltime = 0;
-    private long messageBoxTimeMax = 1000;
+    private final long messageBoxTimeMax = 1000;
     private long messageBoxTime = 0;
     private String message = null;
     private long actionLastTime = 0;
     private long messageLastTime = 0;
-
 
     public Player() {
         super(300, 200, "ME");
@@ -57,40 +56,46 @@ public class Player extends Character {
                 }
             }
 
-            if (isHoldFood()) peekFood().setParentPosition(x, y, true);
+            if (holdFood != null) peekFood().setParentPosition(x, y, true);
         }
 
-        if (collisionBlock instanceof InteractionBlock interactionObject) {
-            interactionObject.setTouch(true);
+        if (collisionBlock instanceof InteractionBlock interactionBlock) {
+            interactionBlock.setTouch(true);
         }
 
-        if (onSpace && (collisionBlock != null)) {
-            onSpace = false;
-            if (collisionBlock.canHold && collisionBlock.isHoldFood() && !this.isHoldFood()) {
-                Food food = collisionBlock.popFood();
-                this.addFood(food);
+        if (!onSpace) return EventEnum.NONE;
+        onSpace = false;
+
+        if (collisionBlock instanceof Table table) {
+            if (table.isCanPop() && canHold()) {
+                addFood(table.popFood());
                 return EventEnum.FOOD_PUT;
-            } else if (collisionBlock.canHold && !collisionBlock.isHoldFood() && this.isHoldFood()) {
-                Food food = this.popFood();
-                collisionBlock.addFood(food);
+            } else if (table.isCanAdd() && isHold()) {
+                table.addFood(popFood());
                 return EventEnum.FOOD_DOWN;
-            } else if (collisionBlock.isHoldFood() && this.isHoldFood()) {
-                addMessage("이미 물건을 들고 있어");
             }
+        } else if (collisionBlock instanceof FoodBox foodBox) {
+            if (canHold()) {
+                addFood(foodBox.popFood());
+                return EventEnum.FOOD_GET;
+            }
+        } else {
+            addMessage("할 수 없어.");
         }
 
         return EventEnum.NONE;
     }
 
-    public void onSpace(boolean space) {
+    public void onSpace() {
         actionCooltime += System.currentTimeMillis() - actionLastTime;
         actionLastTime = System.currentTimeMillis();
 
         if (actionCooltime > actionCooltimeMax) {
             actionCooltime = 0;
-            onSpace = space;
+            onSpace = true;
         } else if (actionCooltime > actionCooltimeMax / 2) { // 너무 민감해서 일정 시간이상 지났을 때만 작동
             addMessage("조금만 더 기다려줘.");
+            onSpace = false;
         }
     }
 
@@ -155,9 +160,6 @@ public class Player extends Character {
         int otherCenterY = other.getY() + (Config.TileSize / 2);
         int otherCenterYUp = otherCenterY - (Config.TileSize / 2);
 
-        return thisCenterXLeft + boundX >= otherCenterXLeft &&
-                thisCenterXLeft <= otherCenterXLeft + Config.TileSize &&
-                thisCenterYUp + boundY >= otherCenterYUp &&
-                thisCenterYUp <= otherCenterYUp + Config.TileSize;
+        return thisCenterXLeft + boundX >= otherCenterXLeft && thisCenterXLeft <= otherCenterXLeft + Config.TileSize && thisCenterYUp + boundY >= otherCenterYUp && thisCenterYUp <= otherCenterYUp + Config.TileSize;
     }
 }

@@ -2,6 +2,7 @@ import Data.*;
 import Render.AssetLoader;
 import Render.Assets;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class PlayManager {
@@ -15,8 +16,6 @@ public class PlayManager {
 
     // 플레이어 관련
     private final Player player;
-    private int playerTileX = 1;
-    private int playerTileY = 1;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
@@ -35,6 +34,7 @@ public class PlayManager {
         try {
             floorScanner = new Scanner(AssetLoader.loadText(Config.BACKGROUNDMAP));
             solidScanner = new Scanner(AssetLoader.loadText(Config.SOLIDMAP));
+            Random random = new Random();
 
             for (int y = 0; y < Config.MAP_Y; y++) {
                 for (int x = 0; x < Config.MAP_X; x++) {
@@ -45,18 +45,26 @@ public class PlayManager {
                     int solid = solidScanner.nextInt();
 
                     if (backgrond != -1) {
-                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], RenderDepth.MAP, false, true);
+                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], RenderDepth.MAP, false);
                     }
                     if (solid != -1) {
                         if (y < 11) {
-                            objectMap[y][x] = new InteractionBlock(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid]);
-                            objectMap[y][x].addFood(Assets.FOODLIST.get(0).clone());
+                            Table table = new Table(tileX, tileY, Assets.DISHMAP[0]);
+                            if (y == 6) table.addFood(Assets.FOODLIST.get(random.nextInt(3)).clone());
+                            objectMap[y][x] = table;
                         } else {
-                            objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid], RenderDepth.OBJECT, true, false);
+                            objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid], RenderDepth.OBJECT, true);
                         }
                     }
                 }
             }
+
+            for (int x = 1; x < 4; x++) {
+                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.sodwkdrh);
+                foodBox.addFood(Assets.FOODLIST.get(x - 1).clone());
+                objectMap[5][x] = foodBox;
+            }
+
         } catch (Exception e) {
             System.out.println(e);
             System.exit(0);
@@ -69,11 +77,11 @@ public class PlayManager {
         if (keyEventData.a()) player.setMoveX(-1);
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
-        if (keyEventData.space()) player.onSpace(true);
+        if (keyEventData.space()) player.onSpace();
 
         // 충격의 충돌 처리 관련 계산
-        playerTileX = player.getTileX();
-        playerTileY = player.getTileY();
+        int playerTileX = player.getTileX();
+        int playerTileY = player.getTileY();
 
         if (playerTileY < 0) playerTileY = 0;
         if (playerTileY > Config.MAP_Y) playerTileY = Config.MAP_Y;
@@ -96,6 +104,8 @@ public class PlayManager {
                     cookTogether.sendFoodPacket(EventEnum.FOOD_PUT, player.collisionBlockTileY(), player.collisionBlockTileX());
             case FOOD_DOWN ->
                     cookTogether.sendFoodPacket(EventEnum.FOOD_DOWN, player.collisionBlockTileY(), player.collisionBlockTileX());
+            case FOOD_GET ->
+                    cookTogether.sendFoodPacket(EventEnum.FOOD_GET, player.collisionBlockTileY(), player.collisionBlockTileX());
         }
         player.updateAnimation();
         player.controlMessageBox();
@@ -112,7 +122,7 @@ public class PlayManager {
         cookTogether.addRenderData(player.getImageRenderData());
         cookTogether.addRenderData(player.getStringRenderData());
 
-        if (player.isHoldFood()) {
+        if (player.isHold()) {
             cookTogether.addRenderData(player.peekFood().getImageRenderData());
         }
         if (player.canMessageRender()) {
@@ -135,8 +145,10 @@ public class PlayManager {
                             cookTogether.addRenderData(obj.getTouchRenderData());
                         }
                         if (obj.isHoldFood()) {
-                            cookTogether.addRenderData(obj.peekFood().getImageRenderData());
-                            cookTogether.addRenderData(obj.peekFood().getStringRenderData());
+                            for (int i = 0; i < obj.getHoldFoodIndex(); i++) {
+                                cookTogether.addRenderData(obj.getFoodRenderData(i));
+                                cookTogether.addRenderData(obj.peekFood().getStringRenderData()); // TODO: 추후 제거
+                            }
                         }
                     } else {
                         cookTogether.addRenderData(object.getImageRenderData());
@@ -147,10 +159,14 @@ public class PlayManager {
     }
 
     public void addFoodInMap(int y, int x, Food food) {
-        objectMap[y][x].addFood(food);
+        ((InteractionBlock) objectMap[y][x]).addFood(food);
     }
 
     public Food popFoodInMap(int y, int x) {
-        return objectMap[y][x].popFood();
+        return ((InteractionBlock) objectMap[y][x]).popFood();
+    }
+
+    public Food getFoodByMap(int y, int x) {
+        return ((FoodBox) objectMap[y][x]).popFood();
     }
 }

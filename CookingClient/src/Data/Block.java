@@ -1,58 +1,20 @@
 package Data;
 
+import lombok.Getter;
+
 import java.awt.image.BufferedImage;
 
+@Getter
 public class Block extends Object {
-    private int boundX;
-    private int boundY;
+    private final int boundX;
+    private final int boundY;
     private final boolean solid;
-    protected boolean canHold;
-    protected Food holdFood = null;
 
-    public Block(int x, int y, int width, int height, BufferedImage sprite, RenderDepth depth, boolean solid, boolean hold) {
-        super(x, y);
+    public Block(int x, int y, int width, int height, BufferedImage sprite, RenderDepth depth, boolean solid) {
+        super(x, y, width, height, sprite, depth);
         this.solid = solid;
-        this.canHold = hold;
-        setSize(width, height);
-        setSprite(sprite);
-        setDepth(depth);
-        setBound(Config.TileSize, Config.TileSize);
-    }
-
-    protected void setBound(int boundX, int boundY) {
-        this.boundX = boundX;
-        this.boundY = boundY;
-    }
-
-    public boolean isCanHold() {
-        return canHold;
-    }
-
-    public boolean isSolid() {
-        return solid;
-    }
-
-    public boolean isHoldFood() {
-        return holdFood != null;
-    }
-
-    public boolean addFood(Food food) {
-        if (!isHoldFood()) {
-            holdFood = food;
-            holdFood.setParentPosition(x, y, false);
-            return true;
-        }
-        return false;
-    }
-
-    public Food peekFood() {
-        return holdFood;
-    }
-
-    public Food popFood() {
-        Food food = holdFood;
-        holdFood = null;
-        return food;
+        this.boundX = Config.TileSize;
+        this.boundY = Config.TileSize;
     }
 
     @Override

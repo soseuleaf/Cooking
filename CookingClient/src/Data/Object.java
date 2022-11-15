@@ -1,71 +1,38 @@
 package Data;
 
-import Render.Assets;
+import lombok.Getter;
 
 import java.awt.image.BufferedImage;
 
+@Getter
 public abstract class Object {
     // 렌더링 좌표
     protected int x;
     protected int y;
-    private RenderDepth depth = RenderDepth.OBJECT;
+    private final RenderDepth depth;
 
     // 이미지 사이즈
-    private int width = Config.TileSize;
-    private int height = Config.TileSize;
+    private final int width;
+    private final int height;
 
     // 기본 스프라이트
-    private BufferedImage sprite = Assets.BLACKTILE;
+    private final BufferedImage sprite;
 
-
-    public Object(int x, int y) {
+    public Object(int x, int y, int width, int height, BufferedImage sprite, RenderDepth depth) {
         this.x = x;
         this.y = y;
-    }
-
-    protected void setSize(int width, int height) {
         this.width = width;
         this.height = height;
-    }
-
-    protected void setDepth(RenderDepth depth) {
+        this.sprite = sprite;
         this.depth = depth;
     }
 
-    protected void setSprite(BufferedImage sprite) {
-        this.sprite = sprite;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
     public int getTileX() {
-        return (x + width / 2) / width;
+        return (x + Config.TileSize / 2) / Config.TileSize;
     }
 
     public int getTileY() {
-        return (y + height / 2) / height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public RenderDepth getDepth() {
-        return depth;
-    }
-
-    public BufferedImage getSprite() {
-        return sprite;
+        return (y + Config.TileSize / 2) / Config.TileSize;
     }
 
     public abstract RenderData getImageRenderData();

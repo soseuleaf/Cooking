@@ -34,7 +34,7 @@ public class UserManager {
             cookTogether.addRenderData(user.getImageRenderData());
             cookTogether.addRenderData(user.getStringRenderData());
 
-            if (user.isHoldFood()) {
+            if (user.isHold()) {
                 Food food = user.peekFood();
                 food.setParentPosition(user.getX(), user.getY(), true);
                 cookTogether.addRenderData(food.getImageRenderData());
