@@ -8,14 +8,16 @@ import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
+import lombok.Getter;
 
 
 public class Food extends Object implements Cloneable {
+    @Getter
     private final FoodType foodType;
     boolean isCharacter = false;
 
     public Food(FoodType foodType) {
-        super(0, 0, Config.TileSize, Config.TileSize, Assets.DISHMAP[foodType.getSpriteNum()], DepthType.UI);
+        super(0, 0, Config.TileSize, Config.TileSize, Assets.DISHMAP[foodType.getSpriteNum()], DepthType.EFFECT);
         this.foodType = foodType;
     }
 

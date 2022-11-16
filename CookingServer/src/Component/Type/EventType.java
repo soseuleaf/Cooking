@@ -1,6 +1,6 @@
 package Component.Type;
 
-public enum EventEnum {
+public enum EventType {
     NONE,
     CONNECT,
     MOVE,
@@ -8,4 +8,5 @@ public enum EventEnum {
     FOOD_PUT,
     FOOD_DOWN,
     FOOD_GET,
+    FOOD_GET_SLICED,
 }

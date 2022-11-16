@@ -6,9 +6,10 @@ import Component.Base.InteractionBlock;
 import Component.Static.Config;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
+import Component.Type.WorkState;
 
 public class Player extends Character {
-    private final int speed = 8;
+    private final int speed = 20;
     private int moveX;
     private int moveY;
     private boolean onSpace = false;
@@ -67,7 +68,7 @@ public class Player extends Character {
         }
     }
 
-    public EventType updateAction(){
+    public EventType updateAction() {
         if (collisionBlock instanceof InteractionBlock interactionBlock) {
             interactionBlock.setTouch(true);
         }
@@ -82,11 +83,32 @@ public class Player extends Character {
             } else if (table.isCanAdd() && isHold()) {
                 table.addFood(popFood());
                 return EventType.FOOD_DOWN;
+            } else if (!table.isHoldFood()) {
+                addMessage("아무것도 없어.");
+            } else if (!table.isCanPop()) {
+                addMessage("여기선 할 수 없어.");
+            } else if (!canHold()) {
+                addMessage("여기에 넣을 수 없어.");
             }
+            return EventType.NONE;
         } else if (collisionBlock instanceof FoodBox foodBox) {
-            if (canHold()) {
-                addFood(foodBox.cloneFood());
+            if (canHold() && foodBox.isCanPop()) {
+                addFood(foodBox.popFood());
                 return EventType.FOOD_GET;
+            }
+        } else if (collisionBlock instanceof Knife knife) {
+            if (isHold() && knife.getWorkState() == WorkState.NONE) {
+                knife.addFood(popFood());
+                return EventType.FOOD_DOWN;
+            } else if (!isHold() && knife.getWorkState() == WorkState.WORKING) {
+                knife.action();
+                return EventType.ACTION;
+            } else if (!isHold() && knife.getWorkState() == WorkState.DONE) {
+                addFood(knife.getSlicedFood());
+                return EventType.FOOD_GET_SLICED;
+            } else {
+                addMessage("음식을 들고있지 않아");
+                return EventType.NONE;
             }
         } else {
             addMessage("할 수 없어.");

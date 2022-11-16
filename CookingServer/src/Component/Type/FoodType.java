@@ -1,23 +1,19 @@
 package Component.Type;
 
+import lombok.Getter;
+
+@Getter
 public enum FoodType {
-    TEST(1, "테스트 데이터"),
-    APPLE(2, "사과"),
+    TEST("테스트 데이터", 9),
+    APPLE("사과", 5),
+    MEAT("고기", 12),
     ;
 
-    private final int index;
     private final String name;
+    private final int spriteNum;
 
-    public int getIndex() {
-        return this.index;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    FoodType(int index, String name) {
-        this.index = index;
+    FoodType(String name, int spriteNum) {
         this.name = name;
+        this.spriteNum = spriteNum;
     }
 }

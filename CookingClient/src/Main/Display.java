@@ -1,14 +1,16 @@
 package Main;
 
-import Component.DTO.KeyEventData;
-import Component.Static.Config;
 import Component.DTO.ImageRenderData;
+import Component.DTO.KeyEventData;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
+import Component.Render.AssetLoader;
+import Component.Static.Config;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -16,6 +18,7 @@ public class Display {
     private final Vector<RenderData> renderDataVector = new Vector<>();
     private JFrame frame;
     private Canvas canvas;
+    private Font font;
     private KeyManager keyManager;
     private final CookTogether cookTogether;
 
@@ -42,6 +45,13 @@ public class Display {
         canvas.setSize(Config.DisplayWidth, Config.DisplayHeight);
         canvas.setMaximumSize(new Dimension(Config.DisplayWidth, Config.DisplayHeight));
         canvas.setFocusable(false);
+
+        try {
+            InputStream inputStream = AssetLoader.loadText("/DNFBitBitTTF.ttf");
+            font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
         frame.add(canvas);
         frame.pack();
@@ -83,6 +93,7 @@ public class Display {
 
         Graphics graphics = bufferStrategy.getDrawGraphics();
         graphics.clearRect(0, 0, Config.DisplayWidth, Config.DisplayHeight);
+        graphics.setFont(font.deriveFont(Font.PLAIN, 18f));
         updateDisplay(graphics);
 
         bufferStrategy.show();

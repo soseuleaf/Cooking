@@ -8,4 +8,5 @@ public enum EventType {
     FOOD_PUT,
     FOOD_DOWN,
     FOOD_GET,
+    FOOD_GET_SLICED,
 }

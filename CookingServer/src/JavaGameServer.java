@@ -212,10 +212,7 @@ public class JavaGameServer extends JFrame {
                         }
 
                     } else if (obcm instanceof FoodPacket packet) {
-                        switch (packet.code) {
-                            case FOOD_PUT, FOOD_DOWN, FOOD_GET -> WriteOtherObject(packet);
-                            default -> System.out.println("Unknown Packet");
-                        }
+                        WriteOtherObject(packet);
                         AppendObject(packet);
                     }
                 } catch (IOException e) {

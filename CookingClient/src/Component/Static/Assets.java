@@ -17,6 +17,7 @@ public class Assets {
     public static BufferedImage[] DISHMAP = new BufferedImage[512];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
     public static BufferedImage sodwkdrh;
+    public static BufferedImage knife;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
@@ -24,6 +25,7 @@ public class Assets {
         loadTileMap();
 
         sodwkdrh = AssetLoader.loadImage("/textures/sodwkdrh.png");
+        knife = new SpriteSheet(AssetLoader.loadImage(Config.CHARACTERSPRITE)).crop(10 * Config.CharacterSpriteSize, 12 * Config.CharacterSpriteSize, Config.CharacterSpriteSize, Config.CharacterSpriteSize).build();
 
         // 음식 관련
         loadFood();
@@ -57,7 +59,7 @@ public class Assets {
     private static void loadTileMap() {
         SpriteSheet tiles = new SpriteSheet(AssetLoader.loadImage(Config.TILEMAP));
         int i = 0;
-        for (int y = 0; y < 5; y++) {
+        for (int y = 0; y < 6; y++) {
             for (int x = 0; x < 5; x++) {
                 TILEMAP[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
             }

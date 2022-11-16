@@ -8,26 +8,37 @@ import Component.Render.Animation;
 import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
+import Component.Type.WorkState;
 import lombok.Getter;
 
 import java.awt.image.BufferedImage;
 
 @Getter
 public abstract class InteractionBlock extends Block {
-    private final boolean canPop;
-    private final BufferedImage touchSprite = Assets.TILEMAP[20];
-    private final Animation useAnimation;
-    private final Food[] holdFood = new Food[4];
+    // working 상태가 되었을 때 애니메이션
+    private final Animation workingAnimation;
+
+    // 현재 오브젝트가 collision object가 되었는지 판단하는 것.
     private boolean isTouch = false;
-    private final boolean isUsing = false;
+    private final BufferedImage touchSprite = Assets.TILEMAP[20];
+
+    // 음식을 저장할 수 있는 수.
+    private final Food[] holdFood = new Food[4];
     private final int holdFoodMax;
     private int holdFoodIndex = 0;
 
-    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, Animation animation, int holdFoodMax, boolean canPop) {
+    // 작동 관련
+    protected final double progressMax = 100;
+    protected double progressValue = 0;
+    private final BufferedImage progressSprite = Assets.TILEMAP[25];
+
+    // 비어 있어서 음식을 세팅할 수 있음
+    protected WorkState workState = WorkState.NONE;
+
+    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, Animation animation, int holdFoodMax) {
         super(x, y, width, height, sprite, DepthType.BIGOBJ, true);
-        this.useAnimation = animation;
         this.holdFoodMax = holdFoodMax;
-        this.canPop = canPop;
+        this.workingAnimation = animation;
     }
 
     public void setTouch(boolean touch) {
@@ -54,11 +65,11 @@ public abstract class InteractionBlock extends Block {
     }
 
     public boolean isCanPop() {
-        return !isUsing && canPop && isHoldFood();
+        return holdFoodIndex > 0;
     }
 
     public boolean isCanAdd() {
-        return !isUsing && (holdFoodIndex < holdFoodMax);
+        return (holdFoodIndex < holdFoodMax);
     }
 
     public boolean isHoldFood() {
@@ -67,10 +78,23 @@ public abstract class InteractionBlock extends Block {
 
     public RenderData getTouchRenderData() {
         setTouch(false);
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), touchSprite, DepthType.EFFECT);
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), touchSprite, DepthType.UI);
     }
 
+    public RenderData getProgressRenderData() {
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), (int) (getWidth() * (progressValue / progressMax)), getHeight(), progressSprite, DepthType.UI);
+    }
+
+    public void addProgress(double value) {
+        progressValue += value;
+    }
+
+    public abstract void action();
+
+    public abstract void update();
+
     public abstract RenderData getFoodRenderData(int index);
+
 
     public abstract RenderData getImageRenderData();
 

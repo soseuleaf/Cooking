@@ -63,10 +63,11 @@ public class PlayManager {
             }
 
             for (int x = 1; x < 4; x++) {
-                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.sodwkdrh);
-                foodBox.addFood(Assets.FOODLIST.get(x - 1).clone());
+                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.sodwkdrh, Assets.FOODLIST.get(x - 1).clone());
                 objectMap[5][x] = foodBox;
             }
+
+            objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7, Assets.knife);
 
         } catch (Exception e) {
             System.out.println(e);
@@ -81,10 +82,10 @@ public class PlayManager {
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
         if (keyEventData.space()) player.onSpace();
-        
+
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());
-        
+
         // 플레이어 데이터 업데이트
         player.updateMove(aroundObject);
         switch (player.updateAction()) { // 아무튼 스페이스바 클릭으로 이벤트가 발생했다면
@@ -94,6 +95,10 @@ public class PlayManager {
                     cookTogether.sendFoodPacket(EventType.FOOD_DOWN, player.collisionBlockTileY(), player.collisionBlockTileX());
             case FOOD_GET ->
                     cookTogether.sendFoodPacket(EventType.FOOD_GET, player.collisionBlockTileY(), player.collisionBlockTileX());
+            case ACTION ->
+                    cookTogether.sendFoodPacket(EventType.ACTION, player.collisionBlockTileY(), player.collisionBlockTileX());
+            case FOOD_GET_SLICED ->
+                    cookTogether.sendFoodPacket(EventType.FOOD_GET_SLICED, player.collisionBlockTileY(), player.collisionBlockTileX());
         }
         player.updateAnimation();
         player.controlMessageBox();
@@ -106,7 +111,7 @@ public class PlayManager {
         player.setMoveY(0);
     }
 
-    public void checkAroundBlock(int tileX, int tileY){
+    public void checkAroundBlock(int tileX, int tileY) {
         if (tileY < 0) tileY = 0;
         if (tileY > Config.MAP_Y) tileY = Config.MAP_Y;
         if (tileX < 0) tileX = 0;
@@ -135,7 +140,7 @@ public class PlayManager {
         }
     }
 
-    public void updateMapRender(){
+    public void updateMapRender() {
         for (int y = 0; y < Config.MAP_Y; y++) {
             for (int x = 0; x < Config.MAP_X; x++) {
                 Block background = backgrondMap[y][x];
@@ -147,10 +152,12 @@ public class PlayManager {
 
                 if (object != null) {
                     if (object instanceof InteractionBlock obj) {
+                        obj.update();
                         cookTogether.addRenderData(obj.getImageRenderData());
-                        if (obj.isTouch()) {
-                            cookTogether.addRenderData(obj.getTouchRenderData());
+                        if (obj.getProgressValue() > 0) {
+                            cookTogether.addRenderData(obj.getProgressRenderData());
                         }
+                        if (obj.isTouch()) cookTogether.addRenderData(obj.getTouchRenderData());
                         if (obj.isHoldFood()) {
                             for (int i = 0; i < obj.getHoldFoodIndex(); i++) {
                                 cookTogether.addRenderData(obj.getFoodRenderData(i));
@@ -173,7 +180,26 @@ public class PlayManager {
         return ((InteractionBlock) objectMap[y][x]).popFood();
     }
 
-    public Food getFoodByMap(int y, int x) {
+    public Food getFoodInMap(int y, int x) {
         return ((FoodBox) objectMap[y][x]).popFood();
+    }
+
+    public void actionBlockInMap(int y, int x) {
+        if (objectMap[y][x] instanceof FoodBox foodBox) {
+            foodBox.action();
+        } else if (objectMap[y][x] instanceof Knife knife) {
+            knife.action();
+        } else {
+            System.out.println("꺅 에러다.");
+        }
+    }
+
+    public Food getSlicedFoodInMap(int y, int x) {
+        if (objectMap[y][x] instanceof Knife knife) {
+            return knife.getSlicedFood();
+        } else {
+            System.out.println("꺅 에러다.");
+            return Assets.FOODLIST.get(0).clone();
+        }
     }
 }
