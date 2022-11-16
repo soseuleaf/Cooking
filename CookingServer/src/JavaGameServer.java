@@ -1,7 +1,7 @@
 //JavaObjServer.java ObjectStream 기반 채팅 Server
 
-import Data.EventPacket;
-import Data.FoodPacket;
+import Component.Packet.EventPacket;
+import Component.Packet.FoodPacket;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
