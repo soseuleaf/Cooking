@@ -7,12 +7,15 @@ import Component.Static.Config;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
 import Component.Type.WorkState;
+import lombok.Getter;
 
 public class Player extends Character {
     private final int speed = 20;
     private int moveX;
     private int moveY;
     private boolean onSpace = false;
+
+    @Getter
     private Block collisionBlock = null;
     private final long actionCooltimeMax = 1000;
     private long actionCooltime = 0;
@@ -32,14 +35,6 @@ public class Player extends Character {
 
     public void setMoveY(int value) {
         moveY = value * speed;
-    }
-
-    public int collisionBlockTileX() {
-        return collisionBlock.getTileX();
-    }
-
-    public int collisionBlockTileY() {
-        return collisionBlock.getTileY();
     }
 
     public void updateMove(Block[] aroundBox) {
@@ -68,21 +63,21 @@ public class Player extends Character {
         }
     }
 
-    public EventType updateAction() {
+    public Boolean updateAction() {
         if (collisionBlock instanceof InteractionBlock interactionBlock) {
             interactionBlock.setTouch(true);
         }
 
-        if (!onSpace) return EventType.NONE;
+        if (!onSpace) return false;
         onSpace = false;
 
         if (collisionBlock instanceof Table table) {
             if (table.isCanPop() && canHold()) {
                 addFood(table.popFood());
-                return EventType.FOOD_PUT;
+                return true;
             } else if (table.isCanAdd() && isHold()) {
                 table.addFood(popFood());
-                return EventType.FOOD_DOWN;
+                return true;
             } else if (!table.isHoldFood()) {
                 addMessage("아무것도 없어.");
             } else if (!table.isCanPop()) {
@@ -90,31 +85,31 @@ public class Player extends Character {
             } else if (!canHold()) {
                 addMessage("여기에 넣을 수 없어.");
             }
-            return EventType.NONE;
+            return false;
         } else if (collisionBlock instanceof FoodBox foodBox) {
             if (canHold() && foodBox.isCanPop()) {
                 addFood(foodBox.popFood());
-                return EventType.FOOD_GET;
+                return true;
             }
         } else if (collisionBlock instanceof Knife knife) {
             if (isHold() && knife.getWorkState() == WorkState.NONE) {
                 knife.addFood(popFood());
-                return EventType.FOOD_DOWN;
+                return true;
             } else if (!isHold() && knife.getWorkState() == WorkState.WORKING) {
                 knife.action();
-                return EventType.ACTION;
+                return true;
             } else if (!isHold() && knife.getWorkState() == WorkState.DONE) {
                 addFood(knife.getSlicedFood());
-                return EventType.FOOD_GET_SLICED;
+                return true;
             } else {
                 addMessage("음식을 들고있지 않아");
-                return EventType.NONE;
+                return false;
             }
         } else {
             addMessage("할 수 없어.");
         }
 
-        return EventType.NONE;
+        return false;
     }
 
     public void onSpace() {
@@ -176,7 +171,7 @@ public class Player extends Character {
     private boolean isCollision(Block other) { // 충돌 체크 함수
         if (other == null || !other.isSolid()) return false;
 
-        int boundX = Config.TileSize - 16;
+        int boundX = Config.TileSize - (Config.TileSize / 2);
         int boundY = 2;
 
         int thisCenterX = x + (getWidth() / 2);

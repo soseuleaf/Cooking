@@ -5,13 +5,14 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
+import Component.Type.BlockType;
 import Component.Type.WorkState;
 
 import java.awt.image.BufferedImage;
 
 public class Knife extends InteractionBlock {
     public Knife(int x, int y, BufferedImage sprite) {
-        super(x, y, Config.TileSize, Config.TileSize, sprite, null, 1);
+        super(x, y, Config.TileSize, Config.TileSize, sprite, BlockType.Knife,null, 1);
     }
 
     public Food getSlicedFood() {

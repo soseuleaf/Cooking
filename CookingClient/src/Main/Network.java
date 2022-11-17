@@ -1,8 +1,11 @@
 package Main;
 
-import Component.Type.EventType;
-import Component.Packet.EventPacket;
-import Component.Packet.FoodPacket;
+import Component.Packet.ConnectPacket;
+import Component.Packet.UserPacket;
+import Component.Type.BlockType;
+import Component.Packet.BlockPacket;
+import Component.Type.FoodType;
+import Component.Type.WorkState;
 
 import java.io.*;
 import java.net.Socket;
@@ -26,10 +29,10 @@ public class Network implements Serializable {
             oos.flush();
             ois = new ObjectInputStream(socket.getInputStream());
 
-            sendLoginPacket();
-
             ListenThread listenThread = new ListenThread();
             listenThread.start();
+
+            sendConnectPacket(100);
         } catch (NumberFormatException | IOException e) {
             e.printStackTrace();
         }
@@ -51,14 +54,18 @@ public class Network implements Serializable {
                 if (obcm == null) {
                     break;
                 }
-                if (obcm instanceof EventPacket packet) {
-                    cookTogether.recvPacket(packet);
+                if (obcm instanceof ConnectPacket packet) {
+                    cookTogether.recvConnectPacket(packet);
                     //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
                     //System.out.println(msg);
-                } else if (obcm instanceof FoodPacket packet) {
-                    cookTogether.recvPacket(packet);
-                    msg = String.format("[%s] %s", packet.uuid.toString(), packet.code, packet.x, packet.y);
-                    System.out.println(msg);
+                } else if (obcm instanceof UserPacket packet) {
+                    cookTogether.recvUserPacket(packet);
+                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
+                    //System.out.println(msg);
+                } else if (obcm instanceof BlockPacket packet) {
+                    cookTogether.recvBlockPacket(packet);
+                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.code, packet.x, packet.y);
+                    //System.out.println(msg);
                 } else {
                     System.out.println("Unknown Packet");
                 }
@@ -66,16 +73,16 @@ public class Network implements Serializable {
         }
     }
 
-    public void sendLoginPacket() {
-        sendObject(new EventPacket(uuid, EventType.CONNECT, "Hello", 0, 0));
+    public void sendConnectPacket(int code) {
+        sendObject(new ConnectPacket(uuid, code, "유저", 100, 100));
     }
 
-    public void sendMovePacket(String message, int x, int y) {
-        sendObject(new EventPacket(uuid, EventType.MOVE, message, x, y));
+    public void sendUserPacket(int x, int y, FoodType foodType) {
+        sendObject(new UserPacket(uuid, x, y, foodType));
     }
 
-    public void sendFoodPacket(EventType code, int y, int x) {
-        sendObject(new FoodPacket(uuid, code, y, x));
+    public void sendBlockPacket(BlockType blockType, int y, int x, FoodType[] foodType, WorkState workState, double progress) {
+        sendObject(new BlockPacket(blockType, y, x, foodType, workState, progress));
     }
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드

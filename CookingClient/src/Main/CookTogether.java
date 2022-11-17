@@ -1,12 +1,14 @@
 package Main;
 
-import Component.*;
-import Component.Type.EventType;
-import Component.Packet.EventPacket;
-import Component.Packet.FoodPacket;
+import Component.Packet.ConnectPacket;
+import Component.Type.BlockType;
+import Component.Packet.UserPacket;
+import Component.Packet.BlockPacket;
 import Component.Static.Config;
 import Component.Static.Assets;
 import Component.DTO.RenderData;
+import Component.Type.FoodType;
+import Component.Type.WorkState;
 
 public class CookTogether implements Runnable {
     private Display display;
@@ -24,35 +26,24 @@ public class CookTogether implements Runnable {
         display.addRenderData(renderData);
     }
 
-    public void sendEventPacket(int x, int y) {
-        network.sendMovePacket("Move", x, y);
+    public void sendUserPacket(int x, int y, FoodType foodType) {
+        network.sendUserPacket(x, y, foodType);
     }
 
-    public void sendFoodPacket(EventType code, int y, int x) {
-        network.sendFoodPacket(code, y, x);
+    public void sendBlockPacket(BlockType blockType, int y, int x, FoodType[] foodTypes, WorkState workState, double progress) {
+        network.sendBlockPacket(blockType, y, x, foodTypes, workState, progress);
     }
 
-    public void recvPacket(EventPacket eventPacket) {
-        userManager.recvEventPacket(eventPacket);
+    public void recvConnectPacket(ConnectPacket connectPacket) {
+        userManager.recvConnectPacket(connectPacket);
     }
 
-    public void recvPacket(FoodPacket foodPacket) {
-        Food food;
-        if (foodPacket.code == EventType.FOOD_PUT) {
-            food = playManager.popFoodInMap(foodPacket.y, foodPacket.x);
-            userManager.addFoodByUser(foodPacket.uuid, food);
-        } else if (foodPacket.code == EventType.FOOD_DOWN) {
-            food = userManager.popFoodByUser(foodPacket.uuid);
-            playManager.addFoodInMap(foodPacket.y, foodPacket.x, food);
-        } else if (foodPacket.code == EventType.FOOD_GET) {
-            food = playManager.getFoodInMap(foodPacket.y, foodPacket.x);
-            userManager.addFoodByUser(foodPacket.uuid, food);
-        } else if (foodPacket.code == EventType.FOOD_GET_SLICED) {
-            food = playManager.getSlicedFoodInMap(foodPacket.y, foodPacket.x);
-            userManager.addFoodByUser(foodPacket.uuid, food);
-        } else if (foodPacket.code == EventType.ACTION) {
-            playManager.actionBlockInMap(foodPacket.y, foodPacket.x);
-        }
+    public void recvUserPacket(UserPacket userPacket) {
+        userManager.recvUserPacket(userPacket);
+    }
+
+    public void recvBlockPacket(BlockPacket blockPacket) {
+        playManager.recvBlockPacket(blockPacket);
     }
 
     private void init() {

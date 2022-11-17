@@ -1,5 +1,6 @@
 package Component;
 
+import Component.Type.BlockType;
 import Component.Type.DepthType;
 import Component.Base.InteractionBlock;
 import Component.Static.Config;
@@ -13,7 +14,7 @@ public class FoodBox extends InteractionBlock {
     private final Food tempFood;
 
     public FoodBox(int x, int y, BufferedImage sprite, Food food) {
-        super(x, y, Config.TileSize, Config.TileSize * 2, sprite, null, 1);
+        super(x, y, Config.TileSize, Config.TileSize * 2, sprite, BlockType.FoodBox, null, 1);
         this.tempFood = food.clone();
         this.workState = WorkState.DONE;
         addFood(food);

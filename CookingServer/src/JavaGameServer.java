@@ -1,7 +1,8 @@
 //JavaObjServer.java ObjectStream 기반 채팅 Server
 
-import Component.Packet.EventPacket;
-import Component.Packet.FoodPacket;
+import Component.Packet.BlockPacket;
+import Component.Packet.ConnectPacket;
+import Component.Packet.UserPacket;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -86,11 +87,11 @@ public class JavaGameServer extends JFrame {
         textArea.setCaretPosition(textArea.getText().length());
     }
 
-    public void AppendObject(FoodPacket packet) {
-        textArea.append("code = " + packet.code + "id = " + packet.uuid.toString() + " x: " + packet.x + " y: " + packet.y);
-        textArea.append("\n");
-        textArea.setCaretPosition(textArea.getText().length());
-    }
+//    public void AppendObject(FoodPacket packet) {
+//        textArea.append("code = " + packet.code + "id = " + packet.uuid.toString() + " x: " + packet.x + " y: " + packet.y);
+//        textArea.append("\n");
+//        textArea.setCaretPosition(textArea.getText().length());
+//    }
 
     // 새로운 참가자 accept() 하고 user thread를 새로 생성한다.
     class AcceptServer extends Thread {
@@ -187,6 +188,7 @@ public class JavaGameServer extends JFrame {
         public void run() {
             while (true) {
                 try {
+
                     // 선언 및 객체 읽고 에러 처리
                     Object obcm;
                     if (socket == null) break;
@@ -199,22 +201,26 @@ public class JavaGameServer extends JFrame {
                     }
 
                     // 패킷 판단하고 전달
-                    if (obcm instanceof EventPacket packet) {
-                        switch (packet.code) {
-                            case CONNECT -> {
-                                uuid = packet.uuid;
+                    if(obcm instanceof ConnectPacket packet){
+                        switch (packet.getCode()) {
+                            case 100 -> {
+                                uuid = packet.getUuid();
                                 UserStatus = "O"; // Online 상태
+                                WriteOtherObject(packet);
                                 Login();
                             }
-                            case MOVE -> WriteOtherObject(packet);
-                            //case ACTION -> TODO: 잘못 만든거 같은데 언제가 씀?
+                            case 200 -> WriteOtherObject(packet);
                             default -> System.out.println("Unknown Packet");
                         }
-
-                    } else if (obcm instanceof FoodPacket packet) {
+                    } else if (obcm instanceof UserPacket packet) {
                         WriteOtherObject(packet);
-                        AppendObject(packet);
+                    } else if (obcm instanceof BlockPacket packet) {
+                        WriteOtherObject(packet);
+                    } else {
+                        System.out.println("Unknown Packet");
                     }
+
+
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");
                     try {

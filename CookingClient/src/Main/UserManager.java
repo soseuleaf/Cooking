@@ -1,7 +1,8 @@
 package Main;
 
 import Component.*;
-import Component.Packet.EventPacket;
+import Component.Packet.ConnectPacket;
+import Component.Packet.UserPacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,16 +16,16 @@ public class UserManager {
         this.cookTogether = cookTogether;
     }
 
-    public void recvEventPacket(EventPacket eventPacket) {
-        if (userMap.containsKey(eventPacket.uuid)) {
-            updateUser(userMap.get(eventPacket.uuid), eventPacket);
-        } else {
-            addNewUser(eventPacket.uuid, new User(eventPacket.x, eventPacket.y, "닉네임임시"));
-        }
+    public void recvConnectPacket(ConnectPacket connectPacket) {
+        addNewUser(connectPacket.getUuid(), new User(connectPacket.getX(), connectPacket.getY(), connectPacket.getName()));
     }
 
-    private void updateUser(User user, EventPacket eventPacket) {
-        user.bindEvent(eventPacket);
+    public void recvUserPacket(UserPacket userPacket) {
+        if (userMap.containsKey(userPacket.getUuid())) {
+            userMap.get(userPacket.getUuid()).bindEvent(userPacket);
+        } else {
+            addNewUser(userPacket.getUuid(), new User(userPacket.getX(), userPacket.getY(), "일단 임시로"));
+        }
     }
 
     private void addNewUser(UUID uuid, User user) {

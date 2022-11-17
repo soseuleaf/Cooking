@@ -1,13 +1,14 @@
 package Main;
 
 import Component.*;
-import Component.Type.EventType;
+import Component.Packet.BlockPacket;
 import Component.Type.DepthType;
 import Component.Base.InteractionBlock;
 import Component.DTO.KeyEventData;
 import Component.Static.Config;
 import Component.Render.AssetLoader;
 import Component.Static.Assets;
+import Component.Type.FoodType;
 
 import java.util.Random;
 import java.util.Scanner;
@@ -88,23 +89,29 @@ public class PlayManager {
 
         // 플레이어 데이터 업데이트
         player.updateMove(aroundObject);
-        switch (player.updateAction()) { // 아무튼 스페이스바 클릭으로 이벤트가 발생했다면
-            case FOOD_PUT ->
-                    cookTogether.sendFoodPacket(EventType.FOOD_PUT, player.collisionBlockTileY(), player.collisionBlockTileX());
-            case FOOD_DOWN ->
-                    cookTogether.sendFoodPacket(EventType.FOOD_DOWN, player.collisionBlockTileY(), player.collisionBlockTileX());
-            case FOOD_GET ->
-                    cookTogether.sendFoodPacket(EventType.FOOD_GET, player.collisionBlockTileY(), player.collisionBlockTileX());
-            case ACTION ->
-                    cookTogether.sendFoodPacket(EventType.ACTION, player.collisionBlockTileY(), player.collisionBlockTileX());
-            case FOOD_GET_SLICED ->
-                    cookTogether.sendFoodPacket(EventType.FOOD_GET_SLICED, player.collisionBlockTileY(), player.collisionBlockTileX());
+
+        // 블록 업데이트를 통한 블록 동기화 패킷 전송 
+        if (player.updateAction()) {
+            InteractionBlock sendBlock = (InteractionBlock) player.getCollisionBlock();
+            cookTogether.sendBlockPacket(
+                    sendBlock.getBlockType(),
+                    sendBlock.getTileY(),
+                    sendBlock.getTileX(),
+                    sendBlock.getFoodToFoodType(),
+                    sendBlock.getWorkState(),
+                    sendBlock.getProgressValue()
+            );
         }
+
         player.updateAnimation();
         player.controlMessageBox();
 
+        FoodType foodType = null;
+        if(player.peekFood() != null){
+            foodType= player.peekFood().getFoodType();
+        }
         // 데이터 전송
-        cookTogether.sendEventPacket(player.getX(), player.getY());
+        cookTogether.sendUserPacket(player.getX(), player.getY(), foodType);
 
         // 데이터 정리
         player.setMoveX(0);
@@ -172,16 +179,12 @@ public class PlayManager {
         }
     }
 
-    public void addFoodInMap(int y, int x, Food food) {
-        ((InteractionBlock) objectMap[y][x]).addFood(food);
-    }
-
-    public Food popFoodInMap(int y, int x) {
-        return ((InteractionBlock) objectMap[y][x]).popFood();
-    }
-
-    public Food getFoodInMap(int y, int x) {
-        return ((FoodBox) objectMap[y][x]).popFood();
+    public void recvBlockPacket(BlockPacket blockPacket) {
+        switch (blockPacket.blockType) {
+            case Table -> ((Table) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
+            case FoodBox -> ((FoodBox) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
+            case Knife -> ((Knife) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
+        }
     }
 
     public void actionBlockInMap(int y, int x) {
@@ -191,15 +194,6 @@ public class PlayManager {
             knife.action();
         } else {
             System.out.println("꺅 에러다.");
-        }
-    }
-
-    public Food getSlicedFoodInMap(int y, int x) {
-        if (objectMap[y][x] instanceof Knife knife) {
-            return knife.getSlicedFood();
-        } else {
-            System.out.println("꺅 에러다.");
-            return Assets.FOODLIST.get(0).clone();
         }
     }
 }

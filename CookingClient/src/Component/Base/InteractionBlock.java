@@ -1,6 +1,8 @@
 package Component.Base;
 
 import Component.Block;
+import Component.Packet.BlockPacket;
+import Component.Type.BlockType;
 import Component.Type.DepthType;
 import Component.Food;
 import Component.Static.Config;
@@ -8,6 +10,7 @@ import Component.Render.Animation;
 import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
+import Component.Type.FoodType;
 import Component.Type.WorkState;
 import lombok.Getter;
 
@@ -15,6 +18,9 @@ import java.awt.image.BufferedImage;
 
 @Getter
 public abstract class InteractionBlock extends Block {
+    //
+    protected BlockType blockType;
+
     // working 상태가 되었을 때 애니메이션
     private final Animation workingAnimation;
 
@@ -35,10 +41,11 @@ public abstract class InteractionBlock extends Block {
     // 비어 있어서 음식을 세팅할 수 있음
     protected WorkState workState = WorkState.NONE;
 
-    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, Animation animation, int holdFoodMax) {
+    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, BlockType blockType, Animation animation, int holdFoodMax) {
         super(x, y, width, height, sprite, DepthType.BIGOBJ, true);
         this.holdFoodMax = holdFoodMax;
         this.workingAnimation = animation;
+        this.blockType = blockType;
     }
 
     public void setTouch(boolean touch) {
@@ -59,9 +66,28 @@ public abstract class InteractionBlock extends Block {
 
     public Food popFood() {
         Food food = holdFood[holdFoodIndex - 1];
-        holdFood[holdFoodIndex - 1] = null;
-        holdFoodIndex--;
+        holdFood[holdFoodIndex--] = null;
         return food;
+    }
+
+    public FoodType[] getFoodToFoodType(){
+        FoodType foodTypes[] = new FoodType[holdFoodIndex];
+        for(int i = 0; i < holdFoodIndex; i++){
+            foodTypes[i] = holdFood[i].getFoodType();
+        }
+        return foodTypes;
+    }
+
+    public void setEventData(BlockPacket blockPacket){
+        int i = 0;
+        for (FoodType foodType: blockPacket.foodType) {
+            Food food = Assets.FOODLIST.get(foodType.ordinal()).clone();
+            food.setParentPosition(getX(), getY(), false);
+            holdFood[i++] = food;
+        }
+        holdFoodIndex = i;
+        this.progressValue = blockPacket.progress;
+        this.workState = blockPacket.workState;
     }
 
     public boolean isCanPop() {
