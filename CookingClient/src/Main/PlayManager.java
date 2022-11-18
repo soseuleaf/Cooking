@@ -64,11 +64,14 @@ public class PlayManager {
             }
 
             for (int x = 1; x < 4; x++) {
-                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.sodwkdrh, Assets.FOODLIST.get(x - 1).clone());
+                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.FOODLIST.get(x - 1).clone());
                 objectMap[5][x] = foodBox;
             }
 
-            objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7, Assets.knife);
+            objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7);
+            objectMap[7][9] = new Pot(Config.TileSize * 9, Config.TileSize * 7);
+            objectMap[11][0] = new Trash(Config.TileSize * 0, Config.TileSize * 11);
+            objectMap[11][19] = new Trash(Config.TileSize * 19, Config.TileSize * 11);
 
         } catch (Exception e) {
             System.out.println(e);
@@ -107,8 +110,8 @@ public class PlayManager {
         player.controlMessageBox();
 
         FoodType foodType = null;
-        if(player.peekFood() != null){
-            foodType= player.peekFood().getFoodType();
+        if (player.peekFood() != null) {
+            foodType = player.peekFood().getFoodType();
         }
         // 데이터 전송
         cookTogether.sendUserPacket(player.getX(), player.getY(), foodType);
@@ -168,7 +171,6 @@ public class PlayManager {
                         if (obj.isHoldFood()) {
                             for (int i = 0; i < obj.getHoldFoodIndex(); i++) {
                                 cookTogether.addRenderData(obj.getFoodRenderData(i));
-                                cookTogether.addRenderData(obj.peekFood().getStringRenderData()); // TODO: 추후 제거
                             }
                         }
                     } else {
@@ -180,20 +182,22 @@ public class PlayManager {
     }
 
     public void recvBlockPacket(BlockPacket blockPacket) {
-        switch (blockPacket.blockType) {
-            case Table -> ((Table) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
-            case FoodBox -> ((FoodBox) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
-            case Knife -> ((Knife) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
-        }
-    }
-
-    public void actionBlockInMap(int y, int x) {
-        if (objectMap[y][x] instanceof FoodBox foodBox) {
-            foodBox.action();
-        } else if (objectMap[y][x] instanceof Knife knife) {
-            knife.action();
+        if (objectMap[blockPacket.getY()][blockPacket.getX()] instanceof InteractionBlock block) {
+            block.setEventData(blockPacket);
         } else {
-            System.out.println("꺅 에러다.");
+            // TODO: 혹시나 해당 블록이 없으면 동작하는 함수, 나중에 천천히 업데이트
+            Block temp;
+            switch (blockPacket.blockType) {
+                case Table -> temp = new Table(blockPacket.getX(), blockPacket.getY(), Assets.DISHMAP[0]);
+                case FoodBox ->
+                        temp = new FoodBox(blockPacket.getX(), blockPacket.getY(), Assets.FOODLIST.get(blockPacket.foodType[0].ordinal()).clone());
+                case Knife -> temp = new Knife(blockPacket.getX(), blockPacket.getY());
+                case Pot -> temp = new Pot(blockPacket.getX(), blockPacket.getY());
+                default ->
+                        temp = new Block(blockPacket.getX(), blockPacket.getY(), Config.TileSize, Config.TileSize, Assets.BLACKTILE, DepthType.OBJECT, true);
+            }
+            objectMap[blockPacket.getY()][blockPacket.getX()] = temp;
         }
+        ((InteractionBlock) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
     }
 }

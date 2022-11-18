@@ -29,8 +29,8 @@ public abstract class InteractionBlock extends Block {
     private final BufferedImage touchSprite = Assets.TILEMAP[20];
 
     // 음식을 저장할 수 있는 수.
-    private final Food[] holdFood = new Food[4];
-    private final int holdFoodMax;
+    protected Food[] holdFood = new Food[4];
+    protected int holdFoodMax;
     private int holdFoodIndex = 0;
 
     // 작동 관련
@@ -66,21 +66,27 @@ public abstract class InteractionBlock extends Block {
 
     public Food popFood() {
         Food food = holdFood[holdFoodIndex - 1];
-        holdFood[holdFoodIndex--] = null;
+        holdFood[holdFoodIndex - 1] = null;
+        holdFoodIndex--;
         return food;
     }
 
-    public FoodType[] getFoodToFoodType(){
+    public void clearFood() {
+        holdFood = new Food[4];
+        holdFoodIndex = 0;
+    }
+
+    public FoodType[] getFoodToFoodType() {
         FoodType foodTypes[] = new FoodType[holdFoodIndex];
-        for(int i = 0; i < holdFoodIndex; i++){
+        for (int i = 0; i < holdFoodIndex; i++) {
             foodTypes[i] = holdFood[i].getFoodType();
         }
         return foodTypes;
     }
 
-    public void setEventData(BlockPacket blockPacket){
+    public void setEventData(BlockPacket blockPacket) {
         int i = 0;
-        for (FoodType foodType: blockPacket.foodType) {
+        for (FoodType foodType : blockPacket.foodType) {
             Food food = Assets.FOODLIST.get(foodType.ordinal()).clone();
             food.setParentPosition(getX(), getY(), false);
             holdFood[i++] = food;

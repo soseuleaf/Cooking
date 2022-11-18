@@ -1,11 +1,10 @@
 package Component;
 
-import Component.Type.EventType;
 import Component.Base.Character;
 import Component.Base.InteractionBlock;
-import Component.Static.Config;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
+import Component.Static.Config;
 import Component.Type.WorkState;
 import lombok.Getter;
 
@@ -90,6 +89,9 @@ public class Player extends Character {
             if (canHold() && foodBox.isCanPop()) {
                 addFood(foodBox.popFood());
                 return true;
+            } else if (foodBox.getWorkState() == WorkState.WORKING) {
+                foodBox.action();
+                return true;
             }
         } else if (collisionBlock instanceof Knife knife) {
             if (isHold() && knife.getWorkState() == WorkState.NONE) {
@@ -99,7 +101,29 @@ public class Player extends Character {
                 knife.action();
                 return true;
             } else if (!isHold() && knife.getWorkState() == WorkState.DONE) {
-                addFood(knife.getSlicedFood());
+                addFood(knife.popFood());
+                return true;
+            } else {
+                addMessage("음식을 들고있지 않아");
+                return false;
+            }
+        } else if (collisionBlock instanceof Pot pot) {
+            if (isHold() && pot.getWorkState() == WorkState.NONE) {
+                pot.addFood(popFood());
+                return true;
+            } else if (!isHold() && pot.getWorkState() == WorkState.WORKING) {
+                pot.action();
+                return true;
+            } else if (!isHold() && pot.getWorkState() == WorkState.DONE) {
+                addFood(pot.popFood());
+                return true;
+            } else {
+                addMessage("음식을 들고있지 않아");
+                return false;
+            }
+        } else if (collisionBlock instanceof Trash trash) {
+            if (isHold()) {
+                trash.addFood(popFood());
                 return true;
             } else {
                 addMessage("음식을 들고있지 않아");

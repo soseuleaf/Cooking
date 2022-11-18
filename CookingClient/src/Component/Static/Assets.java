@@ -16,16 +16,22 @@ public class Assets {
     public static BufferedImage[] TILEMAP = new BufferedImage[512];
     public static BufferedImage[] DISHMAP = new BufferedImage[512];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
-    public static BufferedImage sodwkdrh;
+    public static BufferedImage[] refrig = new BufferedImage[2];
+    public static BufferedImage[] pot = new BufferedImage[2];
     public static BufferedImage knife;
+    public static BufferedImage trash;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
         loadCharacter();
         loadTileMap();
 
-        sodwkdrh = AssetLoader.loadImage("/textures/sodwkdrh.png");
-        knife = new SpriteSheet(AssetLoader.loadImage(Config.CHARACTERSPRITE)).crop(10 * Config.CharacterSpriteSize, 12 * Config.CharacterSpriteSize, Config.CharacterSpriteSize, Config.CharacterSpriteSize).build();
+        refrig[0] = AssetLoader.loadImage("/textures/single/refrig_1.png");
+        refrig[1] = AssetLoader.loadImage("/textures/single/refrig_2.png");
+        pot[0] = AssetLoader.loadImage("/textures/single/pot_1.png");
+        pot[1] = AssetLoader.loadImage("/textures/single/pot_2.png");
+        trash = AssetLoader.loadImage("/textures/single/trash.png");
+        knife = AssetLoader.loadImage("/textures/single/knife.png");
 
         // 음식 관련
         loadFood();

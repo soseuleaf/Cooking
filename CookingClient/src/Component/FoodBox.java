@@ -1,5 +1,6 @@
 package Component;
 
+import Component.Static.Assets;
 import Component.Type.BlockType;
 import Component.Type.DepthType;
 import Component.Base.InteractionBlock;
@@ -12,11 +13,14 @@ import java.awt.image.BufferedImage;
 
 public class FoodBox extends InteractionBlock {
     private final Food tempFood;
+    private final BufferedImage[] refrig = Assets.refrig;
+    private BufferedImage currentSprite;
 
-    public FoodBox(int x, int y, BufferedImage sprite, Food food) {
-        super(x, y, Config.TileSize, Config.TileSize * 2, sprite, BlockType.FoodBox, null, 1);
+    public FoodBox(int x, int y, Food food) {
+        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.refrig[0], BlockType.FoodBox, null, 1);
         this.tempFood = food.clone();
         this.workState = WorkState.DONE;
+        this.currentSprite = refrig[0];
         addFood(food);
     }
 
@@ -36,10 +40,18 @@ public class FoodBox extends InteractionBlock {
             case WORKING -> progressValue++;
             case DONE -> progressValue = 0;
         }
-        if (!isHoldFood()) workState = WorkState.WORKING;
+        if (!isHoldFood()) {
+            workState = WorkState.WORKING;
+        }
         if (progressValue > progressMax) {
             addFood(tempFood.clone());
             workState = WorkState.DONE;
+        }
+
+        if (progressValue < 50 && progressValue > 0) {
+            currentSprite = refrig[1];
+        } else {
+            currentSprite = refrig[0];
         }
     }
 
@@ -51,6 +63,6 @@ public class FoodBox extends InteractionBlock {
 
     @Override
     public RenderData getImageRenderData() {
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), getSprite(), getDepth());
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), currentSprite, getDepth());
     }
 }

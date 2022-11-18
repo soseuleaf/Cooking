@@ -8,17 +8,9 @@ import Component.Static.Config;
 import Component.Type.BlockType;
 import Component.Type.WorkState;
 
-import java.awt.image.BufferedImage;
-
 public class Knife extends InteractionBlock {
-    public Knife(int x, int y, BufferedImage sprite) {
-        super(x, y, Config.TileSize, Config.TileSize, sprite, BlockType.Knife,null, 1);
-    }
-
-    public Food getSlicedFood() {
-        Food food = popFood();
-        workState = WorkState.NONE;
-        return food;
+    public Knife(int x, int y) {
+        super(x, y, Config.TileSize, Config.TileSize, Assets.knife, BlockType.Knife, null, 1);
     }
 
     @Override
@@ -28,7 +20,7 @@ public class Knife extends InteractionBlock {
 
     @Override
     public void update() {
-        if (progressValue > progressMax) {
+        if (workState == WorkState.WORKING && progressValue > progressMax) {
             progressValue = 0;
             switch (popFood().getFoodType()) {
                 case TEST -> addFood(Assets.FOODLIST.get(1).clone());
@@ -39,7 +31,8 @@ public class Knife extends InteractionBlock {
             workState = WorkState.DONE;
         } else if (workState == WorkState.NONE && isHoldFood()) {
             workState = WorkState.WORKING;
-            System.out.println(getProgressValue());
+        } else if (workState == WorkState.DONE && !isHoldFood()) {
+            workState = WorkState.NONE;
         }
     }
 

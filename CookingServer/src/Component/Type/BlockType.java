@@ -4,4 +4,6 @@ public enum BlockType {
     Table,
     FoodBox,
     Knife,
+    Pot,
+    Trash,
 }
