@@ -57,7 +57,7 @@ public class FoodBox extends InteractionBlock {
 
     @Override
     public RenderData getFoodRenderData(int index) {
-        Food food = peekFood().clone();
+        Food food = peekFood();
         return new ImageRenderData(getX(), food.getY() - Config.TileSize, food.getWidth(), food.getHeight(), food.getSprite(), DepthType.UI);
     }
 
