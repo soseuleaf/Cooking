@@ -17,7 +17,7 @@ public class FoodBox extends InteractionBlock {
     private BufferedImage currentSprite;
 
     public FoodBox(int x, int y, Food food) {
-        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.refrig[0], BlockType.FoodBox, null, 1);
+        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.refrig[0], BlockType.FoodBox, 1);
         this.tempFood = food.clone();
         this.workState = WorkState.DONE;
         this.currentSprite = refrig[0];
@@ -58,7 +58,7 @@ public class FoodBox extends InteractionBlock {
     @Override
     public RenderData getFoodRenderData(int index) {
         Food food = peekFood();
-        return new ImageRenderData(getX(), food.getY() - Config.TileSize, food.getWidth(), food.getHeight(), food.getSprite(), DepthType.UI);
+        return new ImageRenderData(getX(), food.getY() - Config.TileSize, food.getWidth(), food.getHeight(), food.getSprite(), DepthType.EFFECT);
     }
 
     @Override

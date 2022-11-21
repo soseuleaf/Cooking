@@ -14,7 +14,7 @@ import lombok.Getter;
 public class Food extends Object implements Cloneable {
     @Getter
     private final FoodType foodType;
-    boolean isCharacter = false;
+    private boolean isCharacter = false;
 
     public Food(FoodType foodType) {
         super(0, 0, Config.TileSize, Config.TileSize, Assets.DISHMAP[foodType.getSpriteNum()], DepthType.EFFECT);

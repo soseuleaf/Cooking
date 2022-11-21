@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 public class Table extends InteractionBlock {
     public Table(int x, int y, BufferedImage sprite) {
-        super(x, y, Config.TileSize, Config.TileSize, sprite, BlockType.Table,null, 1);
+        super(x, y, Config.TileSize, Config.TileSize, sprite, BlockType.Table, 1);
     }
 
     @Override

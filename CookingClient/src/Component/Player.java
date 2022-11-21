@@ -119,7 +119,6 @@ public class Player extends Character {
                 return true;
             } else {
                 addMessage("음식을 들고있지 않아");
-                return false;
             }
         } else if (collisionBlock instanceof Trash trash) {
             if (isHold()) {
@@ -127,12 +126,29 @@ public class Player extends Character {
                 return true;
             } else {
                 addMessage("음식을 들고있지 않아");
-                return false;
+            }
+        } else if (collisionBlock instanceof Fryer fryer) {
+            if (isHold() && fryer.getWorkState() == WorkState.NONE) {
+                fryer.addFood(popFood());
+                return true;
+            } else if (!isHold() && fryer.getWorkState() == WorkState.DONE) {
+                addFood(fryer.popFood());
+                return true;
+            }
+        } else if (collisionBlock instanceof Frypan frypan) {
+            if (isHold() && frypan.getWorkState() == WorkState.NONE) {
+                frypan.addFood(popFood());
+                return true;
+            } else if (!isHold() && frypan.getWorkState() == WorkState.WORKING) {
+                frypan.action();
+                return true;
+            } else if (!isHold() && frypan.getWorkState() == WorkState.DONE) {
+                addFood(frypan.popFood());
+                return true;
             }
         } else {
             addMessage("할 수 없어.");
         }
-
         return false;
     }
 

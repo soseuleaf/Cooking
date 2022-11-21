@@ -2,7 +2,9 @@
 
 import Component.Packet.BlockPacket;
 import Component.Packet.ConnectPacket;
+import Component.Packet.EventPacket;
 import Component.Packet.UserPacket;
+import Component.Type.FoodType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -67,8 +69,15 @@ public class JavaGameServer extends JFrame {
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
         });
-        btnServerStart.setBounds(12, 356, 300, 35);
+        btnServerStart.setBounds(12, 356, 150, 35);
         contentPane.add(btnServerStart);
+
+        JButton sendOrderButton = new JButton("주문 보내기");
+        sendOrderButton.addActionListener(e -> {
+            sendOrder(FoodType.APPLE);
+        });
+        sendOrderButton.setBounds(162, 356, 150, 35);
+        contentPane.add(sendOrderButton);
     }
 
     public static void main(String[] args) {
@@ -85,6 +94,15 @@ public class JavaGameServer extends JFrame {
     public void AppendText(String str) {
         textArea.append(str + "\n");
         textArea.setCaretPosition(textArea.getText().length());
+    }
+
+    public void sendOrder(FoodType foodType) {
+        EventPacket eventPacket = new EventPacket(10, foodType, 0);
+        for (int i = 0; i < UserVec.size(); i++) {
+            UserService user = (UserService) UserVec.elementAt(i);
+            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(eventPacket);
+            AppendText(user.uuid + "님에게 전송.");
+        }
     }
 
 //    public void AppendObject(FoodPacket packet) {
@@ -149,14 +167,6 @@ public class JavaGameServer extends JFrame {
             //AppendText("사용자 " + "[" + UserName + "] 퇴장. 현재 참가자 수 " + UserVec.size());
         }
 
-        public void WriteAllObject(Object ob) {
-            for (int i = 0; i < user_vc.size(); i++) {
-                UserService user = (UserService) user_vc.elementAt(i);
-                if (Objects.equals(user.UserStatus, "O"))
-                    user.WriteOneObject(ob);
-            }
-        }
-
         public void WriteOtherObject(Object ob) {
             for (int i = 0; i < user_vc.size(); i++) {
                 UserService user = (UserService) user_vc.elementAt(i);
@@ -188,7 +198,6 @@ public class JavaGameServer extends JFrame {
         public void run() {
             while (true) {
                 try {
-
                     // 선언 및 객체 읽고 에러 처리
                     Object obcm;
                     if (socket == null) break;
@@ -201,7 +210,7 @@ public class JavaGameServer extends JFrame {
                     }
 
                     // 패킷 판단하고 전달
-                    if(obcm instanceof ConnectPacket packet){
+                    if (obcm instanceof ConnectPacket packet) {
                         switch (packet.getCode()) {
                             case 100 -> {
                                 uuid = packet.getUuid();
@@ -215,6 +224,8 @@ public class JavaGameServer extends JFrame {
                     } else if (obcm instanceof UserPacket packet) {
                         WriteOtherObject(packet);
                     } else if (obcm instanceof BlockPacket packet) {
+                        WriteOtherObject(packet);
+                    } else if (obcm instanceof EventPacket packet) {
                         WriteOtherObject(packet);
                     } else {
                         System.out.println("Unknown Packet");

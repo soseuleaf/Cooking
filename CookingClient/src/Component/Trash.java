@@ -9,7 +9,7 @@ import Component.Type.BlockType;
 
 public class Trash extends InteractionBlock {
     public Trash(int x, int y) {
-        super(x, y, Config.TileSize, Config.TileSize, Assets.trash, BlockType.Trash, null, 1);
+        super(x, y, Config.TileSize, Config.TileSize, Assets.trash, BlockType.Trash, 1);
     }
 
     @Override

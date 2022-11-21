@@ -3,5 +3,8 @@ package Component.Type;
 public enum BlockType {
     Table,
     FoodBox,
-    Knife, Pot, Trash,
+    Knife,
+    Pot,
+    Trash,
+    Fryer,
 }

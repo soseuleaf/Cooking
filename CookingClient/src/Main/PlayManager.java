@@ -1,7 +1,9 @@
 package Main;
 
 import Component.*;
+import Component.DTO.ImageRenderData;
 import Component.Packet.BlockPacket;
+import Component.Packet.EventPacket;
 import Component.Type.DepthType;
 import Component.Base.InteractionBlock;
 import Component.DTO.KeyEventData;
@@ -12,6 +14,7 @@ import Component.Type.FoodType;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Vector;
 
 public class PlayManager {
     // 오브젝트 넘기기 위해 저장
@@ -24,6 +27,13 @@ public class PlayManager {
 
     // 플레이어 관련
     private final Player player;
+
+    // 주문 관련
+    private Vector<FoodType> orders = new Vector<>();
+    private boolean viewUi = false;
+
+    // 스코어 관련
+    private int score = 0;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
@@ -70,6 +80,10 @@ public class PlayManager {
 
             objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7);
             objectMap[7][9] = new Pot(Config.TileSize * 9, Config.TileSize * 7);
+            objectMap[7][10] = new Fryer(Config.TileSize * 10, Config.TileSize * 7, true);
+            objectMap[7][11] = new Fryer(Config.TileSize * 11, Config.TileSize * 7, false);
+            objectMap[7][12] = new Frypan(Config.TileSize * 12, Config.TileSize * 7);
+
             objectMap[11][0] = new Trash(Config.TileSize * 0, Config.TileSize * 11);
             objectMap[11][19] = new Trash(Config.TileSize * 19, Config.TileSize * 11);
 
@@ -86,6 +100,15 @@ public class PlayManager {
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
         if (keyEventData.space()) player.onSpace();
+
+        if (keyEventData.tab()) {
+            viewUi = true;
+            System.out.println("누르고 있음");
+        } else {
+            viewUi = false;
+            System.out.println("땟지롱");
+        }
+
 
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());
@@ -181,6 +204,17 @@ public class PlayManager {
         }
     }
 
+    public void updateUiRender() {
+        if (viewUi) {
+            int posX = 100;
+            int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
+            for (FoodType foodtype : orders) {
+                cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.orderTest, DepthType.UI));
+                posX += Config.OrderUiSize * 1.1;
+            }
+        }
+    }
+
     public void recvBlockPacket(BlockPacket blockPacket) {
         if (objectMap[blockPacket.getY()][blockPacket.getX()] instanceof InteractionBlock block) {
             block.setEventData(blockPacket);
@@ -199,5 +233,14 @@ public class PlayManager {
             objectMap[blockPacket.getY()][blockPacket.getX()] = temp;
         }
         ((InteractionBlock) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
+    }
+
+    public void recvEventPacket(EventPacket eventPacket) {
+        switch (eventPacket.getCode()) {
+            case 10 -> orders.add(eventPacket.getFoodType());
+            case 20 -> System.out.println("이 패킷이 왜 여기에?");
+            case 30 -> score += eventPacket.getScore();
+            default -> System.out.println("알 수 없는 이벤트 패킷");
+        }
     }
 }

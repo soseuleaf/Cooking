@@ -19,4 +19,5 @@ public class Config {
     public final static String CHARACTERSPRITE = "/textures/char_kirby.png";
     public final static String BACKGROUNDMAP = "/worlds/background.txt";
     public final static String SOLIDMAP = "/worlds/solid.txt";
+    public static int OrderUiSize = 128;
 }

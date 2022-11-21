@@ -6,21 +6,29 @@ import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.BlockType;
+import Component.Type.DepthType;
 import Component.Type.WorkState;
 
-public class Knife extends InteractionBlock {
-    public Knife(int x, int y) {
-        super(x, y, Config.TileSize, Config.TileSize, Assets.knife, BlockType.Knife, 1);
+import java.awt.image.BufferedImage;
+
+public class Frypan extends InteractionBlock {
+    private BufferedImage[] frypan;
+    private BufferedImage currentSprite;
+
+    public Frypan(int x, int y) {
+        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.fryer[0], BlockType.Fryer, 1);
+        frypan = Assets.frypan;
+        currentSprite = frypan[0];
     }
 
     @Override
     public void action() {
-        addProgress(55);
+        progressValue++;
     }
 
     @Override
     public void update() {
-        if (workState == WorkState.WORKING && progressValue > progressMax) {
+        if (progressValue > progressMax) {
             progressValue = 0;
             switch (popFood().getFoodType()) {
                 case TEST -> addFood(Assets.FOODLIST.get(1).clone());
@@ -29,20 +37,25 @@ public class Knife extends InteractionBlock {
                 default -> addFood(Assets.FOODLIST.get(0).clone());
             }
             workState = WorkState.DONE;
+        } else if (workState == WorkState.WORKING) {
+            if (progressValue % 10 != 0) progressValue += 0.5;
         } else if (workState == WorkState.NONE && isHoldFood()) {
             workState = WorkState.WORKING;
+            currentSprite = frypan[1];
         } else if (workState == WorkState.DONE && !isHoldFood()) {
             workState = WorkState.NONE;
+            currentSprite = frypan[0];
         }
     }
 
     @Override
     public RenderData getFoodRenderData(int index) {
-        return peekFood().getImageRenderData();
+        Food food = peekFood();
+        return new ImageRenderData(getX(), food.getY() - Config.TileSize, food.getWidth(), food.getHeight(), food.getSprite(), DepthType.EFFECT);
     }
 
     @Override
     public RenderData getImageRenderData() {
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), getSprite(), getDepth());
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), currentSprite, getDepth());
     }
 }

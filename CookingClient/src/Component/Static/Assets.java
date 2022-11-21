@@ -18,8 +18,11 @@ public class Assets {
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
     public static BufferedImage[] refrig = new BufferedImage[2];
     public static BufferedImage[] pot = new BufferedImage[2];
+    public static BufferedImage[] fryer = new BufferedImage[4];
+    public static BufferedImage[] frypan = new BufferedImage[2];
     public static BufferedImage knife;
     public static BufferedImage trash;
+    public static BufferedImage orderTest;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
@@ -30,8 +33,15 @@ public class Assets {
         refrig[1] = AssetLoader.loadImage("/textures/single/refrig_2.png");
         pot[0] = AssetLoader.loadImage("/textures/single/pot_1.png");
         pot[1] = AssetLoader.loadImage("/textures/single/pot_2.png");
+        fryer[0] = AssetLoader.loadImage("/textures/single/fryer_left_1.png");
+        fryer[1] = AssetLoader.loadImage("/textures/single/fryer_right_1.png");
+        fryer[2] = AssetLoader.loadImage("/textures/single/fryer_left_2.png");
+        fryer[3] = AssetLoader.loadImage("/textures/single/fryer_right_2.png");
+        frypan[0] = AssetLoader.loadImage("/textures/single/frypan_1.png");
+        frypan[1] = AssetLoader.loadImage("/textures/single/frypan_2.png");
         trash = AssetLoader.loadImage("/textures/single/trash.png");
         knife = AssetLoader.loadImage("/textures/single/knife.png");
+        orderTest = AssetLoader.loadImage("/textures/single/order_1.png");
 
         // 음식 관련
         loadFood();

@@ -1,6 +1,7 @@
 package Main;
 
 import Component.Packet.ConnectPacket;
+import Component.Packet.EventPacket;
 import Component.Packet.UserPacket;
 import Component.Type.BlockType;
 import Component.Packet.BlockPacket;
@@ -49,6 +50,7 @@ public class Network implements Serializable {
                     obcm = ois.readObject();
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
+                    System.exit(0);
                     break;
                 }
                 if (obcm == null) {
@@ -60,12 +62,10 @@ public class Network implements Serializable {
                     //System.out.println(msg);
                 } else if (obcm instanceof UserPacket packet) {
                     cookTogether.recvUserPacket(packet);
-                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
-                    //System.out.println(msg);
                 } else if (obcm instanceof BlockPacket packet) {
                     cookTogether.recvBlockPacket(packet);
-                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.code, packet.x, packet.y);
-                    //System.out.println(msg);
+                } else if (obcm instanceof EventPacket packet) {
+                    cookTogether.recvEventPacket(packet);
                 } else {
                     System.out.println("Unknown Packet");
                 }

@@ -1,12 +1,13 @@
 package Main;
 
-import Component.Packet.ConnectPacket;
-import Component.Type.BlockType;
-import Component.Packet.UserPacket;
-import Component.Packet.BlockPacket;
-import Component.Static.Config;
-import Component.Static.Assets;
 import Component.DTO.RenderData;
+import Component.Packet.BlockPacket;
+import Component.Packet.ConnectPacket;
+import Component.Packet.EventPacket;
+import Component.Packet.UserPacket;
+import Component.Static.Assets;
+import Component.Static.Config;
+import Component.Type.BlockType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
@@ -46,6 +47,10 @@ public class CookTogether implements Runnable {
         playManager.recvBlockPacket(blockPacket);
     }
 
+    public void recvEventPacket(EventPacket eventPacket) {
+        playManager.recvEventPacket(eventPacket);
+    }
+
     private void init() {
         this.display = new Display(this);
         this.playManager = new PlayManager(this);
@@ -60,8 +65,9 @@ public class CookTogether implements Runnable {
         // 렌더링 데이터 추출
         playManager.updatePlayerRender();
         playManager.updateMapRender();
+        playManager.updateUiRender();
         userManager.updateRender();
-
+        
         // 렌더링 진행
         display.render();
     }
@@ -96,5 +102,4 @@ public class CookTogether implements Runnable {
             frameThread.start();
         }
     }
-
 }

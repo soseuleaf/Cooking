@@ -16,7 +16,7 @@ public class Pot extends InteractionBlock {
     private BufferedImage currentSprite;
 
     public Pot(int x, int y) {
-        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.pot[0], BlockType.Pot, null, 4);
+        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.pot[0], BlockType.Pot, 4);
         currentSprite = Assets.pot[0];
     }
 
