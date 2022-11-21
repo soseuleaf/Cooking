@@ -1,10 +1,11 @@
 package Component;
 
 import Component.Base.InteractionBlock;
-import Component.Static.Config;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
+import Component.Static.Config;
 import Component.Type.BlockType;
+import Component.Type.WorkState;
 
 import java.awt.image.BufferedImage;
 
@@ -20,7 +21,14 @@ public class Table extends InteractionBlock {
 
     @Override
     public void update() {
-
+        switch (workState) {
+            case NONE -> {
+                if (isHoldFood()) workState = WorkState.DONE;
+            }
+            case DONE -> {
+                if (!isHoldFood()) workState = WorkState.NONE;
+            }
+        }
     }
 
     @Override

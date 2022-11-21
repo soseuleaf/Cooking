@@ -1,15 +1,14 @@
 package Component.Base;
 
 import Component.Block;
-import Component.Packet.BlockPacket;
-import Component.Type.BlockType;
-import Component.Type.DepthType;
-import Component.Food;
-import Component.Static.Config;
-import Component.Render.Animation;
-import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
+import Component.Food;
+import Component.Packet.BlockPacket;
+import Component.Static.Assets;
+import Component.Static.Config;
+import Component.Type.BlockType;
+import Component.Type.DepthType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 import lombok.Getter;
@@ -20,9 +19,6 @@ import java.awt.image.BufferedImage;
 public abstract class InteractionBlock extends Block {
     //
     protected BlockType blockType;
-
-    // working 상태가 되었을 때 애니메이션
-    private final Animation workingAnimation;
 
     // 현재 오브젝트가 collision object가 되었는지 판단하는 것.
     private boolean isTouch = false;
@@ -41,10 +37,9 @@ public abstract class InteractionBlock extends Block {
     // 비어 있어서 음식을 세팅할 수 있음
     protected WorkState workState = WorkState.NONE;
 
-    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, BlockType blockType, Animation animation, int holdFoodMax) {
+    public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, BlockType blockType, int holdFoodMax) {
         super(x, y, width, height, sprite, DepthType.BIGOBJ, true);
         this.holdFoodMax = holdFoodMax;
-        this.workingAnimation = animation;
         this.blockType = blockType;
     }
 
@@ -96,14 +91,6 @@ public abstract class InteractionBlock extends Block {
         this.workState = blockPacket.workState;
     }
 
-    public boolean isCanPop() {
-        return holdFoodIndex > 0;
-    }
-
-    public boolean isCanAdd() {
-        return (holdFoodIndex < holdFoodMax);
-    }
-
     public boolean isHoldFood() {
         return holdFoodIndex > 0;
     }
@@ -121,28 +108,23 @@ public abstract class InteractionBlock extends Block {
         progressValue += value;
     }
 
+    public boolean canPop() {
+        return workState == WorkState.DONE;
+    }
+
+    public boolean canAdd() {
+        return workState == WorkState.NONE;
+    }
+
+    public boolean canAction() {
+        return workState == WorkState.WORKING;
+    }
+
     public abstract void action();
 
     public abstract void update();
 
     public abstract RenderData getFoodRenderData(int index);
 
-
     public abstract RenderData getImageRenderData();
-
-
-//        BufferedImage outSprite = Assets.TILEMAP[20];
-//        setTouch(false);
-//        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), outSprite, RenderDepth.EFFECT);
-//
-//    @Override
-//    public RenderData getImageRenderData() {
-//        BufferedImage outSprite;
-//        if (!canUse) {
-//            outSprite = interaction.getCurrentFrame();
-//        } else {
-//            outSprite = getSprite();
-//        }
-//        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), outSprite, RenderDepth.OBJECT);
-//    }
 }

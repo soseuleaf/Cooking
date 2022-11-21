@@ -101,14 +101,8 @@ public class PlayManager {
         if (keyEventData.d()) player.setMoveX(1);
         if (keyEventData.space()) player.onSpace();
 
-        if (keyEventData.tab()) {
-            viewUi = true;
-            System.out.println("누르고 있음");
-        } else {
-            viewUi = false;
-            System.out.println("땟지롱");
-        }
-
+        // 누르고 있으면 UI 보여줌
+        viewUi = keyEventData.tab();
 
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());

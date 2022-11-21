@@ -5,7 +5,6 @@ import Component.Base.InteractionBlock;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
 import Component.Static.Config;
-import Component.Type.WorkState;
 import lombok.Getter;
 
 public class Player extends Character {
@@ -68,86 +67,19 @@ public class Player extends Character {
         }
 
         if (!onSpace) return false;
-        onSpace = false;
+        else onSpace = false;
 
-        if (collisionBlock instanceof Table table) {
-            if (table.isCanPop() && canHold()) {
-                addFood(table.popFood());
+        if (collisionBlock instanceof InteractionBlock it) {
+            if (isHold() && it.canAdd()) {
+                it.addFood(popFood());
                 return true;
-            } else if (table.isCanAdd() && isHold()) {
-                table.addFood(popFood());
+            } else if (!isHold() && it.canPop()) {
+                addFood(it.popFood());
                 return true;
-            } else if (!table.isHoldFood()) {
-                addMessage("아무것도 없어.");
-            } else if (!table.isCanPop()) {
-                addMessage("여기선 할 수 없어.");
-            } else if (!canHold()) {
-                addMessage("여기에 넣을 수 없어.");
-            }
-            return false;
-        } else if (collisionBlock instanceof FoodBox foodBox) {
-            if (canHold() && foodBox.isCanPop()) {
-                addFood(foodBox.popFood());
-                return true;
-            } else if (foodBox.getWorkState() == WorkState.WORKING) {
-                foodBox.action();
+            } else if (!isHold() && it.canAction()) {
+                it.action();
                 return true;
             }
-        } else if (collisionBlock instanceof Knife knife) {
-            if (isHold() && knife.getWorkState() == WorkState.NONE) {
-                knife.addFood(popFood());
-                return true;
-            } else if (!isHold() && knife.getWorkState() == WorkState.WORKING) {
-                knife.action();
-                return true;
-            } else if (!isHold() && knife.getWorkState() == WorkState.DONE) {
-                addFood(knife.popFood());
-                return true;
-            } else {
-                addMessage("음식을 들고있지 않아");
-                return false;
-            }
-        } else if (collisionBlock instanceof Pot pot) {
-            if (isHold() && pot.getWorkState() == WorkState.NONE) {
-                pot.addFood(popFood());
-                return true;
-            } else if (!isHold() && pot.getWorkState() == WorkState.WORKING) {
-                pot.action();
-                return true;
-            } else if (!isHold() && pot.getWorkState() == WorkState.DONE) {
-                addFood(pot.popFood());
-                return true;
-            } else {
-                addMessage("음식을 들고있지 않아");
-            }
-        } else if (collisionBlock instanceof Trash trash) {
-            if (isHold()) {
-                trash.addFood(popFood());
-                return true;
-            } else {
-                addMessage("음식을 들고있지 않아");
-            }
-        } else if (collisionBlock instanceof Fryer fryer) {
-            if (isHold() && fryer.getWorkState() == WorkState.NONE) {
-                fryer.addFood(popFood());
-                return true;
-            } else if (!isHold() && fryer.getWorkState() == WorkState.DONE) {
-                addFood(fryer.popFood());
-                return true;
-            }
-        } else if (collisionBlock instanceof Frypan frypan) {
-            if (isHold() && frypan.getWorkState() == WorkState.NONE) {
-                frypan.addFood(popFood());
-                return true;
-            } else if (!isHold() && frypan.getWorkState() == WorkState.WORKING) {
-                frypan.action();
-                return true;
-            } else if (!isHold() && frypan.getWorkState() == WorkState.DONE) {
-                addFood(frypan.popFood());
-                return true;
-            }
-        } else {
-            addMessage("할 수 없어.");
         }
         return false;
     }

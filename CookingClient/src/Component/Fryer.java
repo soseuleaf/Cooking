@@ -33,23 +33,32 @@ public class Fryer extends InteractionBlock {
 
     @Override
     public void update() {
-        if (progressValue > progressMax) {
-            progressValue = 0;
-            switch (popFood().getFoodType()) {
-                case TEST -> addFood(Assets.FOODLIST.get(1).clone());
-                case APPLE -> addFood(Assets.FOODLIST.get(2).clone());
-                case MEAT -> addFood(Assets.FOODLIST.get(0).clone());
-                default -> addFood(Assets.FOODLIST.get(0).clone());
+        switch (workState) {
+            case NONE -> {
+                if (isHoldFood()) {
+                    currentSprite = fryer[1];
+                    workState = WorkState.WORKING;
+                }
             }
-            workState = WorkState.DONE;
-        } else if (workState == WorkState.WORKING) {
-            progressValue += 0.25;
-        } else if (workState == WorkState.NONE && isHoldFood()) {
-            workState = WorkState.WORKING;
-            currentSprite = fryer[1];
-        } else if (workState == WorkState.DONE && !isHoldFood()) {
-            workState = WorkState.NONE;
-            currentSprite = fryer[0];
+            case WORKING -> {
+                progressValue += 0.25;
+                if (progressValue > progressMax) {
+                    progressValue = 0;
+                    switch (popFood().getFoodType()) {
+                        case TEST -> addFood(Assets.FOODLIST.get(1).clone());
+                        case APPLE -> addFood(Assets.FOODLIST.get(2).clone());
+                        case MEAT -> addFood(Assets.FOODLIST.get(0).clone());
+                        default -> addFood(Assets.FOODLIST.get(0).clone());
+                    }
+                    workState = WorkState.DONE;
+                }
+            }
+            case DONE -> {
+                if (!isHoldFood()) {
+                    currentSprite = fryer[0];
+                    workState = WorkState.NONE;
+                }
+            }
         }
     }
 

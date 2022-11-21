@@ -27,31 +27,40 @@ public class Pot extends InteractionBlock {
 
     @Override
     public void update() {
-        if (progressValue > progressMax) {
-            progressValue = 0;
-            Food temp = holdFood[0];
-            for (int i = 1; i < getHoldFoodMax(); i++) {
-                if (holdFood[i].getFoodType() != temp.getFoodType()) {
-                    clearFood();
-                    holdFoodMax = 1;
-                    addFood(Assets.FOODLIST.get(0).clone());
-                    workState = WorkState.DONE;
-                    return;
+        switch (workState) {
+            case NONE -> {
+                if (getHoldFoodIndex() == getHoldFoodMax()) {
+                    workState = WorkState.WORKING;
+                    currentSprite = pot[1];
                 }
             }
-            clearFood();
-            holdFoodMax = 1;
-            addFood(Assets.FOODLIST.get(1).clone());
-            workState = WorkState.DONE;
-        } else if (workState == WorkState.WORKING) {
-            if (progressValue < 50 || progressValue > 53) progressValue += 1;
-        } else if (workState == WorkState.NONE && getHoldFoodIndex() == getHoldFoodMax()) {
-            workState = WorkState.WORKING;
-            currentSprite = pot[1];
-        } else if (workState == WorkState.DONE && !isHoldFood()) {
-            workState = WorkState.NONE;
-            holdFoodMax = 4;
-            currentSprite = pot[0];
+            case WORKING -> {
+                if (progressValue < 50 || progressValue > 53) progressValue += 1;
+                if (progressValue > progressMax) {
+                    progressValue = 0;
+                    Food temp = holdFood[0];
+                    for (int i = 1; i < getHoldFoodMax(); i++) {
+                        if (holdFood[i].getFoodType() != temp.getFoodType()) {
+                            clearFood();
+                            holdFoodMax = 1;
+                            addFood(Assets.FOODLIST.get(0).clone());
+                            workState = WorkState.DONE;
+                            return;
+                        }
+                    }
+                    clearFood();
+                    holdFoodMax = 1;
+                    addFood(Assets.FOODLIST.get(1).clone());
+                    workState = WorkState.DONE;
+                }
+            }
+            case DONE -> {
+                if (!isHoldFood()) {
+                    holdFoodMax = 4;
+                    currentSprite = pot[0];
+                    workState = WorkState.NONE;
+                }
+            }
         }
     }
 

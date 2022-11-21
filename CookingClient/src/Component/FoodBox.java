@@ -25,7 +25,7 @@ public class FoodBox extends InteractionBlock {
     }
 
     @Override
-    public boolean isCanAdd() {
+    public boolean canAdd() {
         return false;
     }
 
@@ -37,21 +37,25 @@ public class FoodBox extends InteractionBlock {
     @Override
     public void update() {
         switch (workState) {
-            case WORKING -> progressValue++;
-            case DONE -> progressValue = 0;
-        }
-        if (!isHoldFood()) {
-            workState = WorkState.WORKING;
-        }
-        if (progressValue > progressMax) {
-            addFood(tempFood.clone());
-            workState = WorkState.DONE;
-        }
+            case WORKING -> {
+                progressValue++;
+                if (progressValue > progressMax) {
+                    progressValue = 0;
+                    addFood(tempFood.clone());
+                    workState = WorkState.DONE;
+                }
 
-        if (progressValue < 50 && progressValue > 0) {
-            currentSprite = refrig[1];
-        } else {
-            currentSprite = refrig[0];
+                if (progressValue < 50 && progressValue > 0) {
+                    currentSprite = refrig[1];
+                } else {
+                    currentSprite = refrig[0];
+                }
+            }
+            case DONE -> {
+                if (!isHoldFood()) {
+                    workState = WorkState.WORKING;
+                }
+            }
         }
     }
 
