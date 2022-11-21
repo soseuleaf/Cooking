@@ -16,7 +16,7 @@ public class Table extends InteractionBlock {
 
     @Override
     public void action() {
-
+        System.out.println("?????");
     }
 
     @Override

@@ -23,7 +23,7 @@ public class Frypan extends InteractionBlock {
 
     @Override
     public void action() {
-        progressValue++;
+        workState = WorkState.WORKING;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class Frypan extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                if (progressValue % 10 != 0) progressValue += 0.5;
+                progressValue += 0.5;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {
@@ -46,6 +46,8 @@ public class Frypan extends InteractionBlock {
                         default -> addFood(Assets.FOODLIST.get(0).clone());
                     }
                     workState = WorkState.DONE;
+                } else if (progressValue % 15 == 14) {
+                    workState = WorkState.NEEDACTION;
                 }
             }
             case DONE -> {

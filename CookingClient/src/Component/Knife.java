@@ -15,7 +15,7 @@ public class Knife extends InteractionBlock {
 
     @Override
     public void action() {
-        addProgress(55);
+        addProgress(51);
     }
 
     @Override
@@ -23,10 +23,10 @@ public class Knife extends InteractionBlock {
         switch (workState) {
             case NONE -> {
                 if (isHoldFood()) {
-                    workState = WorkState.WORKING;
+                    workState = WorkState.NEEDACTION;
                 }
             }
-            case WORKING -> {
+            case NEEDACTION -> {
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {

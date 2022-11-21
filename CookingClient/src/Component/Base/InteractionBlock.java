@@ -104,6 +104,10 @@ public abstract class InteractionBlock extends Block {
         return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), (int) (getWidth() * (progressValue / progressMax)), getHeight(), progressSprite, DepthType.UI);
     }
 
+    public RenderData getNeedActionRenderData() {
+        return new ImageRenderData(x, y - 1, Config.TileSize, Config.TileSize, Assets.actionIcon, DepthType.UI);
+    }
+
     public void addProgress(double value) {
         progressValue += value;
     }
@@ -117,7 +121,7 @@ public abstract class InteractionBlock extends Block {
     }
 
     public boolean canAction() {
-        return workState == WorkState.WORKING;
+        return workState == WorkState.NEEDACTION || workState == WorkState.WORKING;
     }
 
     public abstract void action();

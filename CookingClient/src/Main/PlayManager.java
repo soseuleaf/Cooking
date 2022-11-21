@@ -11,6 +11,7 @@ import Component.Static.Config;
 import Component.Render.AssetLoader;
 import Component.Static.Assets;
 import Component.Type.FoodType;
+import Component.Type.WorkState;
 
 import java.util.Random;
 import java.util.Scanner;
@@ -181,10 +182,12 @@ public class PlayManager {
                     if (object instanceof InteractionBlock obj) {
                         obj.update();
                         cookTogether.addRenderData(obj.getImageRenderData());
-                        if (obj.getProgressValue() > 0) {
+                        if (obj.getProgressValue() > 0)
                             cookTogether.addRenderData(obj.getProgressRenderData());
-                        }
-                        if (obj.isTouch()) cookTogether.addRenderData(obj.getTouchRenderData());
+                        if (obj.getWorkState() == WorkState.NEEDACTION)
+                            cookTogether.addRenderData(obj.getNeedActionRenderData());
+                        if (obj.isTouch())
+                            cookTogether.addRenderData(obj.getTouchRenderData());
                         if (obj.isHoldFood()) {
                             for (int i = 0; i < obj.getHoldFoodIndex(); i++) {
                                 cookTogether.addRenderData(obj.getFoodRenderData(i));

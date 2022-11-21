@@ -22,7 +22,7 @@ public class Pot extends InteractionBlock {
 
     @Override
     public void action() {
-        addProgress(1);
+        workState = WorkState.WORKING;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class Pot extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                if (progressValue < 50 || progressValue > 53) progressValue += 1;
+                progressValue += 1;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     Food temp = holdFood[0];
@@ -52,6 +52,8 @@ public class Pot extends InteractionBlock {
                     holdFoodMax = 1;
                     addFood(Assets.FOODLIST.get(1).clone());
                     workState = WorkState.DONE;
+                } else if (progressValue % 25 == 24) {
+                    workState = WorkState.NEEDACTION;
                 }
             }
             case DONE -> {

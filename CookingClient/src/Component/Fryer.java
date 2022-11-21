@@ -29,6 +29,7 @@ public class Fryer extends InteractionBlock {
 
     @Override
     public void action() {
+        workState = WorkState.WORKING;
     }
 
     @Override
@@ -51,6 +52,8 @@ public class Fryer extends InteractionBlock {
                         default -> addFood(Assets.FOODLIST.get(0).clone());
                     }
                     workState = WorkState.DONE;
+                } else if (progressValue == 50) {
+                    workState = WorkState.NEEDACTION;
                 }
             }
             case DONE -> {
