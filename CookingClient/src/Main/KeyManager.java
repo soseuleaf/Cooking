@@ -8,6 +8,8 @@ import java.awt.event.KeyListener;
 public class KeyManager implements KeyListener {
     private final boolean[] keys;
     private KeyEventData keyEventData;
+    private boolean onSpace;
+    private boolean onQ;
 
     public KeyManager() {
         keys = new boolean[256];
@@ -20,8 +22,10 @@ public class KeyManager implements KeyListener {
                 keys[KeyEvent.VK_A],
                 keys[KeyEvent.VK_S],
                 keys[KeyEvent.VK_D],
-                keys[KeyEvent.VK_SPACE],
-                keys[KeyEvent.VK_Q]);
+                onSpace,
+                onQ);
+        onSpace = false;
+        onQ = false;
     }
 
     public KeyEventData getKetEventData() {
@@ -36,6 +40,8 @@ public class KeyManager implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         keys[e.getKeyCode()] = false;
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) onSpace = true;
+        if (e.getKeyCode() == KeyEvent.VK_Q) onQ = true;
     }
 
     @Override

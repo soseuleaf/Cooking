@@ -7,4 +7,5 @@ public enum BlockType {
     Pot,
     Trash,
     Fryer,
+    Fryerpan,
 }

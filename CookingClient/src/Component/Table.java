@@ -15,6 +15,11 @@ public class Table extends InteractionBlock {
     }
 
     @Override
+    public boolean canFood(Food food) {
+        return true;
+    }
+
+    @Override
     public void action() {
         System.out.println("?????");
     }

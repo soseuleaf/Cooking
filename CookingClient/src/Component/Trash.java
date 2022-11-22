@@ -13,6 +13,11 @@ public class Trash extends InteractionBlock {
     }
 
     @Override
+    public boolean canFood(Food food) {
+        return true;
+    }
+
+    @Override
     public void action() {
 
     }

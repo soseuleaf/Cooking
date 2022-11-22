@@ -6,6 +6,7 @@ import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.BlockType;
+import Component.Type.FoodType;
 import Component.Type.WorkState;
 
 public class Knife extends InteractionBlock {
@@ -14,8 +15,16 @@ public class Knife extends InteractionBlock {
     }
 
     @Override
+    public boolean canFood(Food food) {
+        return switch (food.getFoodType()) {
+            case POTATO, BREAD, COOKED_MEAT -> true;
+            default -> false;
+        };
+    }
+
+    @Override
     public void action() {
-        addProgress(51);
+        addProgress(7);
     }
 
     @Override
@@ -29,10 +38,11 @@ public class Knife extends InteractionBlock {
             case NEEDACTION -> {
                 if (progressValue > progressMax) {
                     progressValue = 0;
+
                     switch (popFood().getFoodType()) {
-                        case TEST -> addFood(Assets.FOODLIST.get(1).clone());
-                        case APPLE -> addFood(Assets.FOODLIST.get(2).clone());
-                        case MEAT -> addFood(Assets.FOODLIST.get(0).clone());
+                        case POTATO -> addFood(Assets.FOODLIST.get(FoodType.SLICED_POTATO.ordinal()).clone());
+                        case BREAD -> addFood(Assets.FOODLIST.get(FoodType.SLICED_BREAD.ordinal()).clone());
+                        case COOKED_MEAT -> addFood(Assets.FOODLIST.get(FoodType.STEAK.ordinal()).clone());
                         default -> addFood(Assets.FOODLIST.get(0).clone());
                     }
                     workState = WorkState.DONE;

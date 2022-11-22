@@ -15,12 +15,9 @@ public class Player extends Character {
 
     @Getter
     private Block collisionBlock = null;
-    private final long actionCooltimeMax = 1000;
-    private long actionCooltime = 0;
     private final long messageBoxTimeMax = 1000;
     private long messageBoxTime = 0;
     private String message = null;
-    private long actionLastTime = 0;
     private long messageLastTime = 0;
 
     public Player() {
@@ -67,10 +64,9 @@ public class Player extends Character {
         }
 
         if (!onSpace) return false;
-        else onSpace = false;
 
         if (collisionBlock instanceof InteractionBlock it) {
-            if (isHold() && it.canAdd()) {
+            if (isHold() && it.canAdd() && it.canFood(peekFood())) {
                 it.addFood(popFood());
                 return true;
             } else if (!isHold() && it.canPop()) {
@@ -84,17 +80,8 @@ public class Player extends Character {
         return false;
     }
 
-    public void onSpace() {
-        actionCooltime += System.currentTimeMillis() - actionLastTime;
-        actionLastTime = System.currentTimeMillis();
-        onSpace = false;
-
-        if (actionCooltime > actionCooltimeMax) {
-            actionCooltime = 0;
-            onSpace = true;
-        } else if (actionCooltime > actionCooltimeMax / 2) { // 너무 민감해서 일정 시간이상 지났을 때만 작동
-            addMessage("조금만 더 기다려줘.");
-        }
+    public void onSpace(boolean space) {
+        onSpace = space;
     }
 
     private void addMessage(String message) {

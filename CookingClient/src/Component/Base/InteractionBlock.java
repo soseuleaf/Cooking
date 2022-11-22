@@ -105,7 +105,7 @@ public abstract class InteractionBlock extends Block {
     }
 
     public RenderData getNeedActionRenderData() {
-        return new ImageRenderData(x, y - 1, Config.TileSize, Config.TileSize, Assets.actionIcon, DepthType.UI);
+        return new ImageRenderData(x, y + 1, Config.TileSize, Config.TileSize, Assets.actionIcon, DepthType.UI);
     }
 
     public void addProgress(double value) {
@@ -123,6 +123,8 @@ public abstract class InteractionBlock extends Block {
     public boolean canAction() {
         return workState == WorkState.NEEDACTION || workState == WorkState.WORKING;
     }
+
+    public abstract boolean canFood(Food food);
 
     public abstract void action();
 

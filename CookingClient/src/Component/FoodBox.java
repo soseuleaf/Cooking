@@ -30,6 +30,11 @@ public class FoodBox extends InteractionBlock {
     }
 
     @Override
+    public boolean canFood(Food food) {
+        return false;
+    }
+
+    @Override
     public void action() {
         addProgress(50);
     }

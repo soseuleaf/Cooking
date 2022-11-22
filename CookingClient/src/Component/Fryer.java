@@ -7,6 +7,7 @@ import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.BlockType;
 import Component.Type.DepthType;
+import Component.Type.FoodType;
 import Component.Type.WorkState;
 
 import java.awt.image.BufferedImage;
@@ -28,6 +29,14 @@ public class Fryer extends InteractionBlock {
     }
 
     @Override
+    public boolean canFood(Food food) {
+        return switch (food.getFoodType()) {
+            case SLICED_POTATO, MANDOO, CHICKEN -> true;
+            default -> false;
+        };
+    }
+
+    @Override
     public void action() {
         workState = WorkState.WORKING;
     }
@@ -46,10 +55,9 @@ public class Fryer extends InteractionBlock {
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {
-                        case TEST -> addFood(Assets.FOODLIST.get(1).clone());
-                        case APPLE -> addFood(Assets.FOODLIST.get(2).clone());
-                        case MEAT -> addFood(Assets.FOODLIST.get(0).clone());
-                        default -> addFood(Assets.FOODLIST.get(0).clone());
+                        case SLICED_POTATO -> addFood(Assets.FOODLIST.get(FoodType.FRENCH_FRIES.ordinal()).clone());
+                        case MANDOO -> addFood(Assets.FOODLIST.get(FoodType.FRIED_MANDOO.ordinal()).clone());
+                        case CHICKEN -> addFood(Assets.FOODLIST.get(FoodType.FRIED_CHICKEN.ordinal()).clone());
                     }
                     workState = WorkState.DONE;
                 } else if (progressValue == 50) {

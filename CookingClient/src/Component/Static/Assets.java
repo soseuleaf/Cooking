@@ -13,8 +13,9 @@ public class Assets {
     public static BufferedImage[] CHARACTER_IDLE_RIGHT = new BufferedImage[1];
     public static BufferedImage[] CHARACTER_MOVE_LEFT = new BufferedImage[8];
     public static BufferedImage[] CHARACTER_MOVE_RIGHT = new BufferedImage[8];
+    public static BufferedImage[] NUMBER = new BufferedImage[11];
     public static BufferedImage[] TILEMAP = new BufferedImage[512];
-    public static BufferedImage[] DISHMAP = new BufferedImage[512];
+    public static BufferedImage[] DISHMAP = new BufferedImage[24];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
     public static BufferedImage[] refrig = new BufferedImage[2];
     public static BufferedImage[] pot = new BufferedImage[2];
@@ -29,6 +30,7 @@ public class Assets {
     public static void init() {
         loadCharacter();
         loadTileMap();
+        loadNumber();
 
         refrig[0] = AssetLoader.loadImage("/textures/single/refrig_1.png");
         refrig[1] = AssetLoader.loadImage("/textures/single/refrig_2.png");
@@ -43,7 +45,7 @@ public class Assets {
         trash = AssetLoader.loadImage("/textures/single/trash.png");
         knife = AssetLoader.loadImage("/textures/single/knife.png");
         orderTest = AssetLoader.loadImage("/textures/single/order_1.png");
-        actionIcon = AssetLoader.loadImage("/textures/single/actionplz.png");
+        actionIcon = AssetLoader.loadImage("/textures/single/action.png");
 
         // 음식 관련
         loadFood();
@@ -56,14 +58,18 @@ public class Assets {
         }
     }
 
+    private static void loadNumber() {
+        SpriteSheet playerSprites = new SpriteSheet(AssetLoader.loadImage("/textures/number.png"));
+        spriteHelper(NUMBER, playerSprites, 0, 0, Config.TileSpriteSize, Config.TileSpriteSize, false);
+    }
+
     private static void loadFood() {
         SpriteSheet dishSprite = new SpriteSheet(AssetLoader.loadImage(Config.DISHMAP));
-        for (int i = 0, y = 0; y < 11; y++) {
-            for (int x = 0; x < 10; x++, i++) {
+        for (int i = 0, y = 0; y < 4; y++) {
+            for (int x = 0; x < 6; x++, i++) {
                 DISHMAP[i] = dishSprite.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
             }
         }
-
     }
 
     private static void loadCharacter() {

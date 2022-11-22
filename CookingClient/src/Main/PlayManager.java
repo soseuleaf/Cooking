@@ -1,15 +1,16 @@
 package Main;
 
+import Component.Base.InteractionBlock;
 import Component.*;
 import Component.DTO.ImageRenderData;
+import Component.DTO.KeyEventData;
+import Component.DTO.StringRenderData;
 import Component.Packet.BlockPacket;
 import Component.Packet.EventPacket;
-import Component.Type.DepthType;
-import Component.Base.InteractionBlock;
-import Component.DTO.KeyEventData;
-import Component.Static.Config;
 import Component.Render.AssetLoader;
 import Component.Static.Assets;
+import Component.Static.Config;
+import Component.Type.DepthType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
@@ -31,10 +32,12 @@ public class PlayManager {
 
     // 주문 관련
     private Vector<FoodType> orders = new Vector<>();
+
     private boolean viewUi = false;
 
     // 스코어 관련
     private int score = 0;
+    private double time = 300;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
@@ -64,9 +67,7 @@ public class PlayManager {
                     }
                     if (solid != -1) {
                         if (y < 11) {
-                            Table table = new Table(tileX, tileY, Assets.DISHMAP[0]);
-                            if (y == 6) table.addFood(Assets.FOODLIST.get(random.nextInt(3)).clone());
-                            objectMap[y][x] = table;
+                            objectMap[y][x] = new Table(tileX, tileY, Assets.TILEMAP[backgrond]);
                         } else {
                             objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid], DepthType.OBJECT, true);
                         }
@@ -74,10 +75,17 @@ public class PlayManager {
                 }
             }
 
-            for (int x = 1; x < 4; x++) {
-                FoodBox foodBox = new FoodBox(Config.TileSize * x, Config.TileSize * 5, Assets.FOODLIST.get(x - 1).clone());
-                objectMap[5][x] = foodBox;
-            }
+            objectMap[1][4] = new FoodBox(Config.TileSize * 4, Config.TileSize * 1, Assets.FOODLIST.get(0).clone());
+            objectMap[1][5] = new FoodBox(Config.TileSize * 5, Config.TileSize * 1, Assets.FOODLIST.get(2).clone());
+            objectMap[1][6] = new FoodBox(Config.TileSize * 6, Config.TileSize * 1, Assets.FOODLIST.get(4).clone());
+            objectMap[1][7] = new FoodBox(Config.TileSize * 7, Config.TileSize * 1, Assets.FOODLIST.get(6).clone());
+            objectMap[1][8] = new FoodBox(Config.TileSize * 8, Config.TileSize * 1, Assets.FOODLIST.get(9).clone());
+            objectMap[1][9] = new FoodBox(Config.TileSize * 9, Config.TileSize * 1, Assets.FOODLIST.get(12).clone());
+            objectMap[1][10] = new FoodBox(Config.TileSize * 10, Config.TileSize * 1, Assets.FOODLIST.get(14).clone());
+            objectMap[1][11] = new FoodBox(Config.TileSize * 11, Config.TileSize * 1, Assets.FOODLIST.get(16).clone());
+            objectMap[1][12] = new FoodBox(Config.TileSize * 12, Config.TileSize * 1, Assets.FOODLIST.get(18).clone());
+            objectMap[1][13] = new FoodBox(Config.TileSize * 13, Config.TileSize * 1, Assets.FOODLIST.get(20).clone());
+            objectMap[1][14] = new FoodBox(Config.TileSize * 14, Config.TileSize * 1, Assets.FOODLIST.get(22).clone());
 
             objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7);
             objectMap[7][9] = new Pot(Config.TileSize * 9, Config.TileSize * 7);
@@ -100,10 +108,9 @@ public class PlayManager {
         if (keyEventData.a()) player.setMoveX(-1);
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
-        if (keyEventData.space()) player.onSpace();
+        if (keyEventData.q()) viewUi = !viewUi;
 
-        // 누르고 있으면 UI 보여줌
-        viewUi = keyEventData.tab();
+        player.onSpace(keyEventData.space());
 
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());
@@ -124,6 +131,7 @@ public class PlayManager {
             );
         }
 
+        updateUi();
         player.updateAnimation();
         player.controlMessageBox();
 
@@ -137,6 +145,11 @@ public class PlayManager {
         // 데이터 정리
         player.setMoveX(0);
         player.setMoveY(0);
+    }
+
+    private void updateUi() {
+        score++;
+        time -= 1.0 / Config.FPS;
     }
 
     public void checkAroundBlock(int tileX, int tileY) {
@@ -201,7 +214,30 @@ public class PlayManager {
         }
     }
 
+
     public void updateUiRender() {
+        int[] timeArray = new int[4];
+        timeArray[0] = (int) time / 60 / 10;
+        timeArray[1] = (int) time / 60 % 10;
+        timeArray[2] = (int) time % 60 / 10;
+        timeArray[3] = (int) time % 60 % 10;
+
+        int[] timePosX = new int[4];
+        timePosX[0] = Config.DisplayWidth / 2 - (Config.TileSize * 2) - (Config.TileSize / 2);
+        timePosX[1] = timePosX[0] + Config.TileSize;
+        timePosX[2] = timePosX[1] + Config.TileSize + Config.TileSize;
+        timePosX[3] = timePosX[2] + Config.TileSize;
+        int timePosY = 16;
+
+        for (int i = 0; i < 4; i++) {
+            int tmp = Math.max(timeArray[i], 0);
+            cookTogether.addRenderData(new ImageRenderData(timePosX[i], timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[tmp], DepthType.UI));
+        }
+
+        int timeCenter = Config.DisplayWidth / 2 - (Config.TileSize / 2);
+        cookTogether.addRenderData(new ImageRenderData(timeCenter, timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[10], DepthType.UI));
+
+        cookTogether.addRenderData(new StringRenderData(Config.DisplayWidth / 2, 200, String.valueOf(score)));
         if (viewUi) {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));

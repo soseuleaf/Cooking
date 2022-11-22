@@ -7,6 +7,7 @@ import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.BlockType;
 import Component.Type.DepthType;
+import Component.Type.FoodType;
 import Component.Type.WorkState;
 
 import java.awt.image.BufferedImage;
@@ -16,9 +17,17 @@ public class Frypan extends InteractionBlock {
     private BufferedImage currentSprite;
 
     public Frypan(int x, int y) {
-        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.fryer[0], BlockType.Fryer, 1);
+        super(x, y, Config.TileSize, Config.TileSize * 2, Assets.fryer[0], BlockType.Fryerpan, 1);
         frypan = Assets.frypan;
         currentSprite = frypan[0];
+    }
+
+    @Override
+    public boolean canFood(Food food) {
+        return switch (food.getFoodType()) {
+            case SALMON, BACON, MEAT, EGG -> true;
+            default -> false;
+        };
     }
 
     @Override
@@ -40,10 +49,10 @@ public class Frypan extends InteractionBlock {
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {
-                        case TEST -> addFood(Assets.FOODLIST.get(1).clone());
-                        case APPLE -> addFood(Assets.FOODLIST.get(2).clone());
-                        case MEAT -> addFood(Assets.FOODLIST.get(0).clone());
-                        default -> addFood(Assets.FOODLIST.get(0).clone());
+                        case SALMON -> addFood(Assets.FOODLIST.get(FoodType.COOKED_SALMON.ordinal()).clone());
+                        case BACON -> addFood(Assets.FOODLIST.get(FoodType.COOKED_BACON.ordinal()).clone());
+                        case MEAT -> addFood(Assets.FOODLIST.get(FoodType.COOKED_MEAT.ordinal()).clone());
+                        case EGG -> addFood(Assets.FOODLIST.get(FoodType.FRIED_EGG.ordinal()).clone());
                     }
                     workState = WorkState.DONE;
                 } else if (progressValue % 15 == 14) {

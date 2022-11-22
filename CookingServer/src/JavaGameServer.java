@@ -74,7 +74,7 @@ public class JavaGameServer extends JFrame {
 
         JButton sendOrderButton = new JButton("주문 보내기");
         sendOrderButton.addActionListener(e -> {
-            sendOrder(FoodType.APPLE);
+            sendOrder(FoodType.FRIED_EGG);
         });
         sendOrderButton.setBounds(162, 356, 150, 35);
         contentPane.add(sendOrderButton);
