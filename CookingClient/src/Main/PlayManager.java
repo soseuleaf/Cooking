@@ -7,6 +7,7 @@ import Component.DTO.KeyEventData;
 import Component.DTO.StringRenderData;
 import Component.Packet.BlockPacket;
 import Component.Packet.EventPacket;
+import Component.Packet.StatePacket;
 import Component.Render.AssetLoader;
 import Component.Static.Assets;
 import Component.Static.Config;
@@ -131,7 +132,6 @@ public class PlayManager {
             );
         }
 
-        updateUi();
         player.updateAnimation();
         player.controlMessageBox();
 
@@ -145,11 +145,6 @@ public class PlayManager {
         // 데이터 정리
         player.setMoveX(0);
         player.setMoveY(0);
-    }
-
-    private void updateUi() {
-        score++;
-        time -= 1.0 / Config.FPS;
     }
 
     public void checkAroundBlock(int tileX, int tileY) {
@@ -272,8 +267,12 @@ public class PlayManager {
         switch (eventPacket.getCode()) {
             case 10 -> orders.add(eventPacket.getFoodType());
             case 20 -> System.out.println("이 패킷이 왜 여기에?");
-            case 30 -> score += eventPacket.getScore();
             default -> System.out.println("알 수 없는 이벤트 패킷");
         }
+    }
+
+    public void recvStatePacket(StatePacket statePacket) {
+        this.time = statePacket.getTime();
+        this.score = statePacket.getScore();
     }
 }

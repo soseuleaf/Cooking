@@ -51,7 +51,7 @@ public class Fryer extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                progressValue += 0.25;
+                progressValue += 1;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {

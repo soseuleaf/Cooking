@@ -1,9 +1,6 @@
 //JavaObjServer.java ObjectStream 기반 채팅 Server
 
-import Component.Packet.BlockPacket;
-import Component.Packet.ConnectPacket;
-import Component.Packet.EventPacket;
-import Component.Packet.UserPacket;
+import Component.Packet.*;
 import Component.Type.FoodType;
 
 import javax.swing.*;
@@ -15,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -27,6 +26,8 @@ public class JavaGameServer extends JFrame {
     private ServerSocket socket; // 서버소켓
     private Socket client_socket; // accept() 에서 생성된 client 소켓
     private final Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
+    private double time = 6000;
+    private int score = 1;
 
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,8 +67,31 @@ public class JavaGameServer extends JFrame {
             btnServerStart.setText("Chat Server Running..");
             btnServerStart.setEnabled(false); // 서버를 더이상 실행시키지 못 하게 막는다
             txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
+
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
+
+            //주문을 수시로 전송
+            Timer m = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    sendOrder(FoodType.randomFood());
+                }
+            };
+            m.schedule(task,0, 1000);
+
+            // 수시로 상태 동기화
+            Timer m2 = new Timer();
+            TimerTask task2 = new TimerTask() {
+                @Override
+                public void run() {
+                    time--;
+                    score++;
+                    sendState();
+                }
+            };
+            m2.schedule(task2, 0, 1000);
         });
         btnServerStart.setBounds(12, 356, 150, 35);
         contentPane.add(btnServerStart);
@@ -97,10 +121,19 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendOrder(FoodType foodType) {
-        EventPacket eventPacket = new EventPacket(10, foodType, 0);
+        EventPacket eventPacket = new EventPacket(10, foodType);
         for (int i = 0; i < UserVec.size(); i++) {
             UserService user = (UserService) UserVec.elementAt(i);
             if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(eventPacket);
+            AppendText(user.uuid + "님에게 전송.");
+        }
+    }
+
+    public void sendState() {
+        StatePacket statePacket = new StatePacket(time, score);
+        for (int i = 0; i < UserVec.size(); i++) {
+            UserService user = (UserService) UserVec.elementAt(i);
+            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(statePacket);
             AppendText(user.uuid + "님에게 전송.");
         }
     }
@@ -230,7 +263,6 @@ public class JavaGameServer extends JFrame {
                     } else {
                         System.out.println("Unknown Packet");
                     }
-
 
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");

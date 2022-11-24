@@ -48,7 +48,7 @@ public class Pot extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                progressValue += 1;
+                progressValue += 0.25;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     Food temp = new Food(FoodType.EGG);
@@ -58,8 +58,10 @@ public class Pot extends InteractionBlock {
                         case MUSHROOM -> temp = Assets.FOODLIST.get(FoodType.MUSHROOM_SOUP.ordinal()).clone();
                     }
                     clearFood();
-                    holdFoodMax = 1;
-                    addFood(temp);
+                    addFood(temp.clone());
+                    addFood(temp.clone());
+                    addFood(temp.clone());
+                    addFood(temp.clone());
                     workState = WorkState.DONE;
                 } else if (progressValue % 25 == 24) {
                     workState = WorkState.NEEDACTION;
@@ -67,7 +69,6 @@ public class Pot extends InteractionBlock {
             }
             case DONE -> {
                 if (!isHoldFood()) {
-                    holdFoodMax = 4;
                     currentSprite = pot[0];
                     workState = WorkState.NONE;
                 }

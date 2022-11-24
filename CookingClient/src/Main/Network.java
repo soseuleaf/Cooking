@@ -1,10 +1,7 @@
 package Main;
 
-import Component.Packet.ConnectPacket;
-import Component.Packet.EventPacket;
-import Component.Packet.UserPacket;
+import Component.Packet.*;
 import Component.Type.BlockType;
-import Component.Packet.BlockPacket;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
@@ -42,7 +39,7 @@ public class Network implements Serializable {
 
     class ListenThread extends Thread {
         public void run() {
-            Object obcm;
+            Object obcm = null;
             String msg;
 
             while (true) {
@@ -51,7 +48,6 @@ public class Network implements Serializable {
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
                     System.exit(0);
-                    break;
                 }
                 if (obcm == null) {
                     break;
@@ -66,7 +62,11 @@ public class Network implements Serializable {
                     cookTogether.recvBlockPacket(packet);
                 } else if (obcm instanceof EventPacket packet) {
                     cookTogether.recvEventPacket(packet);
-                } else {
+                } else if (obcm instanceof StatePacket packet) {
+                    cookTogether.recvStatePacket(packet);
+                    msg = String.format("%d, %f", packet.getScore(), packet.getTime());
+                    System.out.println(msg);
+                }else {
                     System.out.println("Unknown Packet");
                 }
             }

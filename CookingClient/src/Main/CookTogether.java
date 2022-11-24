@@ -1,10 +1,7 @@
 package Main;
 
 import Component.DTO.RenderData;
-import Component.Packet.BlockPacket;
-import Component.Packet.ConnectPacket;
-import Component.Packet.EventPacket;
-import Component.Packet.UserPacket;
+import Component.Packet.*;
 import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.BlockType;
@@ -51,11 +48,14 @@ public class CookTogether implements Runnable {
         playManager.recvEventPacket(eventPacket);
     }
 
+    public void recvStatePacket(StatePacket statePacket) { playManager.recvStatePacket(statePacket); }
+
     private void init() {
         this.display = new Display(this);
         this.playManager = new PlayManager(this);
-        this.network = new Network(this, "Test", "127.0.0.1", "30000");
         this.userManager = new UserManager(this);
+
+        this.network = new Network(this, "Test", "127.0.0.1", "30000");
     }
 
     private void update() {
