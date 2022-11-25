@@ -1,5 +1,6 @@
 //JavaObjServer.java ObjectStream 기반 채팅 Server
 
+import Component.Order;
 import Component.Packet.*;
 import Component.Type.FoodType;
 
@@ -9,25 +10,28 @@ import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 
 public class JavaGameServer extends JFrame {
+    @Serial
     private static final long serialVersionUID = 1L;
-    private static final int BUF_LEN = 128; // Windows 처럼 BUF_LEN 을 정의
-    JTextArea textArea;
+    private final JTextArea textArea;
     private final JPanel contentPane;
     private final JTextField txtPortNumber;
     private ServerSocket socket; // 서버소켓
     private Socket client_socket; // accept() 에서 생성된 client 소켓
     private final Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
+
+
+    /* 게임 서비스 관련 */
     private double time = 6000;
     private int score = 1;
+    private final ArrayList<Order> orderArrayList = new ArrayList<>();
+    private volatile boolean lock = false;
 
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -73,35 +77,46 @@ public class JavaGameServer extends JFrame {
 
             //주문을 수시로 전송
             Timer m = new Timer();
-            TimerTask task = new TimerTask() {
+            TimerTask order = new TimerTask() {
                 @Override
                 public void run() {
-                    sendOrder(FoodType.randomFood());
+                    UUID uuid = UUID.randomUUID();
+                    FoodType needFood = FoodType.randomFood();
+                    Order order = Order.NewOrder(uuid, needFood);
+                    sendOrder(uuid, needFood);
+                    while (lock) Thread.onSpinWait();
+                    orderArrayList.add(order);
                 }
             };
-            m.schedule(task,0, 1000);
+            m.schedule(order, 0, 10000);
 
             // 수시로 상태 동기화
             Timer m2 = new Timer();
-            TimerTask task2 = new TimerTask() {
+            TimerTask orderUpdate = new TimerTask() {
                 @Override
                 public void run() {
                     time--;
                     score++;
+                    lock = true;
+                    for (Iterator<Order> i = orderArrayList.iterator(); i.hasNext(); ) {
+                        Order order = i.next();
+                        order.updateTime();
+                        System.out.println("order: " + order.getFoodType() + " time: " + order.getNowTime());
+                        if (order.isExpirationOrder()) {
+                            score -= 1000;
+                            sendRemoveOrder(order.getUuid());
+                            i.remove();
+                        }
+                    }
+                    lock = false;
+                    System.out.println("-------------------------");
                     sendState();
                 }
             };
-            m2.schedule(task2, 0, 1000);
+            m2.schedule(orderUpdate, 0, 1000);
         });
         btnServerStart.setBounds(12, 356, 150, 35);
         contentPane.add(btnServerStart);
-
-        JButton sendOrderButton = new JButton("주문 보내기");
-        sendOrderButton.addActionListener(e -> {
-            sendOrder(FoodType.FRIED_EGG);
-        });
-        sendOrderButton.setBounds(162, 356, 150, 35);
-        contentPane.add(sendOrderButton);
     }
 
     public static void main(String[] args) {
@@ -120,20 +135,25 @@ public class JavaGameServer extends JFrame {
         textArea.setCaretPosition(textArea.getText().length());
     }
 
-    public void sendOrder(FoodType foodType) {
-        EventPacket eventPacket = new EventPacket(10, foodType);
-        for (int i = 0; i < UserVec.size(); i++) {
-            UserService user = (UserService) UserVec.elementAt(i);
-            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(eventPacket);
-            AppendText(user.uuid + "님에게 전송.");
-        }
+    public void sendOrder(UUID uuid, FoodType foodType) {
+        EventPacket eventPacket = new EventPacket(10, uuid, foodType);
+        sendToAll(eventPacket);
+    }
+
+    public void sendRemoveOrder(UUID uuid) {
+        EventPacket eventPacket = new EventPacket(30, uuid, null);
+        sendToAll(eventPacket);
     }
 
     public void sendState() {
         StatePacket statePacket = new StatePacket(time, score);
+        sendToAll(statePacket);
+    }
+
+    public void sendToAll(Object object) {
         for (int i = 0; i < UserVec.size(); i++) {
             UserService user = (UserService) UserVec.elementAt(i);
-            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(statePacket);
+            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
             AppendText(user.uuid + "님에게 전송.");
         }
     }
@@ -209,6 +229,15 @@ public class JavaGameServer extends JFrame {
             }
         }
 
+        public void WriteAllObject(Object ob) {
+            for (int i = 0; i < user_vc.size(); i++) {
+                UserService user = (UserService) user_vc.elementAt(i);
+                if (Objects.equals(user.UserStatus, "O")) {
+                    user.WriteOneObject(ob);
+                }
+            }
+        }
+
         public void WriteOneObject(Object ob) {
             try {
                 oos.writeObject(ob);
@@ -259,11 +288,21 @@ public class JavaGameServer extends JFrame {
                     } else if (obcm instanceof BlockPacket packet) {
                         WriteOtherObject(packet);
                     } else if (obcm instanceof EventPacket packet) {
-                        WriteOtherObject(packet);
+                        for (Order order : orderArrayList) {
+                            if (packet.getOrderUuid().equals(order.getUuid())) {
+                                if (order.getFoodType() == order.getFoodType()) {
+                                    score += 1000;
+                                } else {
+                                    score -= 1000;
+                                }
+                                order.updateTime(999);
+                                break;
+                            }
+                        }
+                        sendRemoveOrder(packet.getOrderUuid());
                     } else {
                         System.out.println("Unknown Packet");
                     }
-
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");
                     try {

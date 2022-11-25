@@ -2,6 +2,9 @@ package Component.Type;
 
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Random;
+
 @Getter
 public enum FoodType {
     SALMON("연어", 0),
@@ -35,5 +38,13 @@ public enum FoodType {
     FoodType(String name, int spriteNum) {
         this.name = name;
         this.spriteNum = spriteNum;
+    }
+
+    private static final List<FoodType> VALUES = List.of(values());
+    private static final int SIZE = VALUES.size();
+    private static final Random RANDOM = new Random();
+
+    public static FoodType randomFood() {
+        return VALUES.get(RANDOM.nextInt(SIZE));
     }
 }

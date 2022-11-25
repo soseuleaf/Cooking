@@ -24,7 +24,9 @@ public class Assets {
     public static BufferedImage knife;
     public static BufferedImage trash;
     public static BufferedImage orderTest;
+    public static BufferedImage orderTime;
     public static BufferedImage actionIcon;
+    public static BufferedImage foodout;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
@@ -45,7 +47,9 @@ public class Assets {
         trash = AssetLoader.loadImage("/textures/single/trash.png");
         knife = AssetLoader.loadImage("/textures/single/knife.png");
         orderTest = AssetLoader.loadImage("/textures/single/order_1.png");
+        orderTime = AssetLoader.loadImage("/textures/single/order_time.png");
         actionIcon = AssetLoader.loadImage("/textures/single/action.png");
+        foodout = AssetLoader.loadImage("/textures/single/foodout.png");
 
         // 음식 관련
         loadFood();

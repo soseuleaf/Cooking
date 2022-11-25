@@ -81,14 +81,14 @@ public abstract class InteractionBlock extends Block {
 
     public void setEventData(BlockPacket blockPacket) {
         int i = 0;
-        for (FoodType foodType : blockPacket.foodType) {
+        for (FoodType foodType : blockPacket.getFoodType()) {
             Food food = Assets.FOODLIST.get(foodType.ordinal()).clone();
             food.setParentPosition(getX(), getY(), false);
             holdFood[i++] = food;
         }
         holdFoodIndex = i;
-        this.progressValue = blockPacket.progress;
-        this.workState = blockPacket.workState;
+        this.progressValue = blockPacket.getProgress();
+        this.workState = blockPacket.getWorkState();
     }
 
     public boolean isHoldFood() {

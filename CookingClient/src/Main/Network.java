@@ -5,7 +5,10 @@ import Component.Type.BlockType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.UUID;
 
@@ -52,10 +55,12 @@ public class Network implements Serializable {
                 if (obcm == null) {
                     break;
                 }
+
+                //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
+                //System.out.println(msg);
+
                 if (obcm instanceof ConnectPacket packet) {
                     cookTogether.recvConnectPacket(packet);
-                    //msg = String.format("[%s] %s", packet.uuid.toString(), packet.data);
-                    //System.out.println(msg);
                 } else if (obcm instanceof UserPacket packet) {
                     cookTogether.recvUserPacket(packet);
                 } else if (obcm instanceof BlockPacket packet) {
@@ -64,9 +69,7 @@ public class Network implements Serializable {
                     cookTogether.recvEventPacket(packet);
                 } else if (obcm instanceof StatePacket packet) {
                     cookTogether.recvStatePacket(packet);
-                    msg = String.format("%d, %f", packet.getScore(), packet.getTime());
-                    System.out.println(msg);
-                }else {
+                } else {
                     System.out.println("Unknown Packet");
                 }
             }
@@ -83,6 +86,10 @@ public class Network implements Serializable {
 
     public void sendBlockPacket(BlockType blockType, int y, int x, FoodType[] foodType, WorkState workState, double progress) {
         sendObject(new BlockPacket(blockType, y, x, foodType, workState, progress));
+    }
+
+    public void sendEventPacket(int code, UUID uuid, FoodType foodType) {
+        sendObject(new EventPacket(code, uuid, foodType));
     }
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드

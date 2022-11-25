@@ -37,19 +37,19 @@ public class Player extends Character {
             collisionBlock = null;
 
             x += moveX;
-            for (int index = 0; index < aroundBox.length; index++) {
-                if (isCollision(aroundBox[index])) {
+            for (Block box : aroundBox) {
+                if (isCollision(box)) {
                     x -= moveX;
-                    collisionBlock = aroundBox[index];
+                    collisionBlock = box;
                     break;
                 }
             }
 
             y += moveY;
-            for (int index = 0; index < aroundBox.length; index++) {
-                if (isCollision(aroundBox[index])) {
+            for (Block box : aroundBox) {
+                if (isCollision(box)) {
                     y -= moveY;
-                    collisionBlock = aroundBox[index];
+                    collisionBlock = box;
                     break;
                 }
             }

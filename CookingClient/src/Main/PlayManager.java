@@ -15,9 +15,8 @@ import Component.Type.DepthType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
-import java.util.Random;
+import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Vector;
 
 public class PlayManager {
     // 오브젝트 넘기기 위해 저장
@@ -32,7 +31,8 @@ public class PlayManager {
     private final Player player;
 
     // 주문 관련
-    private Vector<FoodType> orders = new Vector<>();
+    private final ArrayList<Order> orderArrayList = new ArrayList<>();
+    private volatile boolean lock = false;
 
     private boolean viewUi = false;
 
@@ -53,7 +53,6 @@ public class PlayManager {
         try {
             floorScanner = new Scanner(AssetLoader.loadText(Config.BACKGROUNDMAP));
             solidScanner = new Scanner(AssetLoader.loadText(Config.SOLIDMAP));
-            Random random = new Random();
 
             for (int y = 0; y < Config.MAP_Y; y++) {
                 for (int x = 0; x < Config.MAP_X; x++) {
@@ -93,9 +92,11 @@ public class PlayManager {
             objectMap[7][10] = new Fryer(Config.TileSize * 10, Config.TileSize * 7, true);
             objectMap[7][11] = new Fryer(Config.TileSize * 11, Config.TileSize * 7, false);
             objectMap[7][12] = new Frypan(Config.TileSize * 12, Config.TileSize * 7);
+            objectMap[7][13] = new FoodOut(Config.TileSize * 13, Config.TileSize * 7);
 
             objectMap[11][0] = new Trash(Config.TileSize * 0, Config.TileSize * 11);
             objectMap[11][19] = new Trash(Config.TileSize * 19, Config.TileSize * 11);
+
 
         } catch (Exception e) {
             System.out.println(e);
@@ -103,7 +104,7 @@ public class PlayManager {
         }
     }
 
-    public void updateData(KeyEventData keyEventData) {
+    public void update(KeyEventData keyEventData) {
         // 키 입력 전송
         if (keyEventData.w()) player.setMoveY(-1);
         if (keyEventData.a()) player.setMoveX(-1);
@@ -130,6 +131,16 @@ public class PlayManager {
                     sendBlock.getWorkState(),
                     sendBlock.getProgressValue()
             );
+
+            if (sendBlock instanceof FoodOut) {
+                for (Order order : orderArrayList) {
+                    if (order.getFoodType() == sendBlock.peekFood().getFoodType()) {
+                        cookTogether.sendEventPacket(order.getUuid(), order.getFoodType());
+                        break;
+                    }
+                }
+
+            }
         }
 
         player.updateAnimation();
@@ -224,24 +235,35 @@ public class PlayManager {
         timePosX[3] = timePosX[2] + Config.TileSize;
         int timePosY = 16;
 
+        // 시간 그리기
+        int timeCenter = Config.DisplayWidth / 2 - (Config.TileSize / 2);
+        cookTogether.addRenderData(new ImageRenderData(timeCenter, timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[10], DepthType.UI));
+
         for (int i = 0; i < 4; i++) {
             int tmp = Math.max(timeArray[i], 0);
             cookTogether.addRenderData(new ImageRenderData(timePosX[i], timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[tmp], DepthType.UI));
         }
 
-        int timeCenter = Config.DisplayWidth / 2 - (Config.TileSize / 2);
-        cookTogether.addRenderData(new ImageRenderData(timeCenter, timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[10], DepthType.UI));
-
+        // 점수 그리기 임시
         cookTogether.addRenderData(new StringRenderData(Config.DisplayWidth / 2, 200, String.valueOf(score)));
+
+        // 오더 그리기
         if (viewUi) {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
-            for (FoodType foodtype : orders) {
+            while (lock) {
+                System.out.println("락 작동 중");
+                Thread.onSpinWait();
+            }
+            for (Order order : orderArrayList) {
                 cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.orderTest, DepthType.UI));
+                cookTogether.addRenderData(new StringRenderData(posX, posY, order.toString()));
+                cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
                 posX += Config.OrderUiSize * 1.1;
             }
         }
     }
+
 
     public void recvBlockPacket(BlockPacket blockPacket) {
         if (objectMap[blockPacket.getY()][blockPacket.getX()] instanceof InteractionBlock block) {
@@ -249,10 +271,10 @@ public class PlayManager {
         } else {
             // TODO: 혹시나 해당 블록이 없으면 동작하는 함수, 나중에 천천히 업데이트
             Block temp;
-            switch (blockPacket.blockType) {
+            switch (blockPacket.getBlockType()) {
                 case Table -> temp = new Table(blockPacket.getX(), blockPacket.getY(), Assets.DISHMAP[0]);
                 case FoodBox ->
-                        temp = new FoodBox(blockPacket.getX(), blockPacket.getY(), Assets.FOODLIST.get(blockPacket.foodType[0].ordinal()).clone());
+                        temp = new FoodBox(blockPacket.getX(), blockPacket.getY(), Assets.FOODLIST.get(blockPacket.getFoodType()[0].ordinal()).clone());
                 case Knife -> temp = new Knife(blockPacket.getX(), blockPacket.getY());
                 case Pot -> temp = new Pot(blockPacket.getX(), blockPacket.getY());
                 default ->
@@ -265,14 +287,28 @@ public class PlayManager {
 
     public void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
-            case 10 -> orders.add(eventPacket.getFoodType());
+            case 10 -> {
+                lock = true;
+                orderArrayList.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
+                lock = false;
+            }
             case 20 -> System.out.println("이 패킷이 왜 여기에?");
+            case 30 -> {
+                lock = true;
+                orderArrayList.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
+                lock = false;
+            }
             default -> System.out.println("알 수 없는 이벤트 패킷");
         }
     }
 
     public void recvStatePacket(StatePacket statePacket) {
+        double passedTime = time - statePacket.getTime();
         this.time = statePacket.getTime();
         this.score = statePacket.getScore();
+
+        lock = true;
+        orderArrayList.replaceAll(order -> order.updateTime(passedTime));
+        lock = false;
     }
 }

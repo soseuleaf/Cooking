@@ -1,7 +1,5 @@
 package Component.Packet;
 
-import Component.Food;
-import Component.Type.EventType;
 import Component.Type.FoodType;
 import lombok.Getter;
 
@@ -13,9 +11,10 @@ import java.util.UUID;
 public class UserPacket implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private UUID uuid;
-    private int x, y;
-    private FoodType foodType;
+    private final UUID uuid;
+    private final int x;
+    private final int y;
+    private final FoodType foodType;
 
     public UserPacket(UUID uuid, int x, int y, FoodType foodType) {
         this.uuid = uuid;

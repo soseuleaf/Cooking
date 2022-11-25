@@ -8,6 +8,8 @@ import Component.Type.BlockType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
 
+import java.util.UUID;
+
 public class CookTogether implements Runnable {
     private Display display;
     private Network network;
@@ -32,6 +34,10 @@ public class CookTogether implements Runnable {
         network.sendBlockPacket(blockType, y, x, foodTypes, workState, progress);
     }
 
+    public void sendEventPacket(UUID uuid, FoodType foodType) {
+        network.sendEventPacket(20, uuid, foodType);
+    }
+
     public void recvConnectPacket(ConnectPacket connectPacket) {
         userManager.recvConnectPacket(connectPacket);
     }
@@ -48,26 +54,27 @@ public class CookTogether implements Runnable {
         playManager.recvEventPacket(eventPacket);
     }
 
-    public void recvStatePacket(StatePacket statePacket) { playManager.recvStatePacket(statePacket); }
+    public void recvStatePacket(StatePacket statePacket) {
+        playManager.recvStatePacket(statePacket);
+    }
 
     private void init() {
         this.display = new Display(this);
         this.playManager = new PlayManager(this);
         this.userManager = new UserManager(this);
-
         this.network = new Network(this, "Test", "127.0.0.1", "30000");
     }
 
     private void update() {
         // 키 데이터 전송 및 데이터 가공
-        playManager.updateData(display.getKeyEventData());
+        playManager.update(display.getKeyEventData());
 
         // 렌더링 데이터 추출
         playManager.updatePlayerRender();
         playManager.updateMapRender();
         playManager.updateUiRender();
         userManager.updateRender();
-        
+
         // 렌더링 진행
         display.render();
     }
