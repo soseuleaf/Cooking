@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 public class UserPacket implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1662022300670224623L;
     private final UUID uuid;
     private final int x;
     private final int y;

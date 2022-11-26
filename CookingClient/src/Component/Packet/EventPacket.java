@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 public class EventPacket implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1662022300670224623L;
     private final int code; // 10: Send order, 20: plz Check Food
     private final UUID orderUuid;
     private final FoodType foodType;

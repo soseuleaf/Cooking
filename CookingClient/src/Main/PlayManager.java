@@ -32,7 +32,6 @@ public class PlayManager {
 
     // 주문 관련
     private final ArrayList<Order> orderArrayList = new ArrayList<>();
-    private volatile boolean lock = false;
 
     private boolean viewUi = false;
 
@@ -251,15 +250,14 @@ public class PlayManager {
         if (viewUi) {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
-            while (lock) {
-                System.out.println("락 작동 중");
-                Thread.onSpinWait();
-            }
-            for (Order order : orderArrayList) {
-                cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.orderTest, DepthType.UI));
-                cookTogether.addRenderData(new StringRenderData(posX, posY, order.toString()));
-                cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
-                posX += Config.OrderUiSize * 1.1;
+
+            synchronized (this) {
+                for (Order order : orderArrayList) {
+                    cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.orderTest, DepthType.UI));
+                    cookTogether.addRenderData(new StringRenderData(posX, posY, order.toString()));
+                    cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
+                    posX += Config.OrderUiSize * 1.1;
+                }
             }
         }
     }
@@ -285,19 +283,11 @@ public class PlayManager {
         ((InteractionBlock) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
     }
 
-    public void recvEventPacket(EventPacket eventPacket) {
+    public synchronized void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
-            case 10 -> {
-                lock = true;
-                orderArrayList.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
-                lock = false;
-            }
+            case 10 -> orderArrayList.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
             case 20 -> System.out.println("이 패킷이 왜 여기에?");
-            case 30 -> {
-                lock = true;
-                orderArrayList.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
-                lock = false;
-            }
+            case 30 -> orderArrayList.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
             default -> System.out.println("알 수 없는 이벤트 패킷");
         }
     }
@@ -306,9 +296,8 @@ public class PlayManager {
         double passedTime = time - statePacket.getTime();
         this.time = statePacket.getTime();
         this.score = statePacket.getScore();
-
-        lock = true;
-        orderArrayList.replaceAll(order -> order.updateTime(passedTime));
-        lock = false;
+        synchronized (this) {
+            orderArrayList.replaceAll(order -> order.updateTime(passedTime));
+        }
     }
 }

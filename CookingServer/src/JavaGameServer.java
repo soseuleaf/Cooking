@@ -31,7 +31,6 @@ public class JavaGameServer extends JFrame {
     private double time = 6000;
     private int score = 1;
     private final ArrayList<Order> orderArrayList = new ArrayList<>();
-    private volatile boolean lock = false;
 
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -84,8 +83,10 @@ public class JavaGameServer extends JFrame {
                     FoodType needFood = FoodType.randomFood();
                     Order order = Order.NewOrder(uuid, needFood);
                     sendOrder(uuid, needFood);
-                    while (lock) Thread.onSpinWait();
-                    orderArrayList.add(order);
+                    AppendText("new order! " + order);
+                    synchronized (this) {
+                        orderArrayList.add(order);
+                    }
                 }
             };
             m.schedule(order, 0, 10000);
@@ -97,18 +98,18 @@ public class JavaGameServer extends JFrame {
                 public void run() {
                     time--;
                     score++;
-                    lock = true;
-                    for (Iterator<Order> i = orderArrayList.iterator(); i.hasNext(); ) {
-                        Order order = i.next();
-                        order.updateTime();
-                        System.out.println("order: " + order.getFoodType() + " time: " + order.getNowTime());
-                        if (order.isExpirationOrder()) {
-                            score -= 1000;
-                            sendRemoveOrder(order.getUuid());
-                            i.remove();
+                    synchronized (this) {
+                        for (Iterator<Order> i = orderArrayList.iterator(); i.hasNext(); ) {
+                            Order order = i.next();
+                            order.updateTime();
+                            System.out.println("order: " + order);
+                            if (order.isExpirationOrder()) {
+                                score -= 1000;
+                                sendRemoveOrder(order.getUuid());
+                                i.remove();
+                            }
                         }
                     }
-                    lock = false;
                     System.out.println("-------------------------");
                     sendState();
                 }
@@ -154,7 +155,6 @@ public class JavaGameServer extends JFrame {
         for (int i = 0; i < UserVec.size(); i++) {
             UserService user = (UserService) UserVec.elementAt(i);
             if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
-            AppendText(user.uuid + "님에게 전송.");
         }
     }
 
@@ -288,15 +288,17 @@ public class JavaGameServer extends JFrame {
                     } else if (obcm instanceof BlockPacket packet) {
                         WriteOtherObject(packet);
                     } else if (obcm instanceof EventPacket packet) {
-                        for (Order order : orderArrayList) {
-                            if (packet.getOrderUuid().equals(order.getUuid())) {
-                                if (order.getFoodType() == order.getFoodType()) {
-                                    score += 1000;
-                                } else {
-                                    score -= 1000;
+                        synchronized (this) {
+                            for (Order order : orderArrayList) {
+                                if (packet.getOrderUuid().equals(order.getUuid())) {
+                                    if (order.getFoodType() == order.getFoodType()) {
+                                        score += 1000;
+                                    } else {
+                                        score -= 1000;
+                                    }
+                                    order.updateTime(999);
+                                    break;
                                 }
-                                order.updateTime(999);
-                                break;
                             }
                         }
                         sendRemoveOrder(packet.getOrderUuid());

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 public class ConnectPacket implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1662022300670224623L;
     private final UUID uuid;
     private final int code; // 100: connect, 200: disconnect
     private final String name;

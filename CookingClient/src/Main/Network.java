@@ -47,7 +47,9 @@ public class Network implements Serializable {
 
             while (true) {
                 try {
-                    obcm = ois.readObject();
+                    synchronized (this) {
+                        obcm = ois.readObject();
+                    }
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
                     System.exit(0);

@@ -10,10 +10,11 @@ import java.util.UUID;
 @Getter
 public class UserPacket implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1L;
-    private UUID uuid;
-    private int x, y;
-    private FoodType foodType;
+    private static final long serialVersionUID = -1662022300670224623L;
+    private final UUID uuid;
+    private final int x;
+    private final int y;
+    private final FoodType foodType;
 
     public UserPacket(UUID uuid, int x, int y, FoodType foodType) {
         this.uuid = uuid;
