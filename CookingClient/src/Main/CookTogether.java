@@ -23,7 +23,8 @@ public class CookTogether implements Runnable {
     }
 
     public void addRenderData(RenderData renderData) {
-        display.addRenderData(renderData);
+        if (renderData != null)
+            display.addRenderData(renderData);
     }
 
     public void sendUserPacket(int x, int y, FoodType foodType) {

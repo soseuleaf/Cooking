@@ -21,7 +21,7 @@ public class Player extends Character {
     private long messageLastTime = 0;
 
     public Player() {
-        super(300, 200, "ME");
+        super(300, 400, "ME");
     }
 
     public void setMoveX(int value) {

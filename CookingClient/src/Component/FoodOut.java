@@ -1,7 +1,6 @@
 package Component;
 
 import Component.Base.InteractionBlock;
-import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
@@ -43,6 +42,6 @@ public class FoodOut extends InteractionBlock {
 
     @Override
     public RenderData getImageRenderData() {
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), getSprite(), getDepth());
+        return null;
     }
 }

@@ -11,8 +11,7 @@ import java.io.Serializable;
 @Getter
 public class BlockPacket implements Serializable {
     @Serial
-    private static final long serialVersionUID = -1662022300670224623L;
-    ;
+    private static final long serialVersionUID = 1L;
     private final BlockType blockType;
     private final int x;
     private final int y;

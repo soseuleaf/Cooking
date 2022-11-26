@@ -13,7 +13,7 @@ import Component.Type.WorkState;
 import java.awt.image.BufferedImage;
 
 public class Frypan extends InteractionBlock {
-    private BufferedImage[] frypan;
+    private final BufferedImage[] frypan;
     private BufferedImage currentSprite;
 
     public Frypan(int x, int y) {

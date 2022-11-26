@@ -23,10 +23,12 @@ public class Assets {
     public static BufferedImage[] frypan = new BufferedImage[2];
     public static BufferedImage knife;
     public static BufferedImage trash;
-    public static BufferedImage orderTest;
+    public static BufferedImage order;
     public static BufferedImage orderTime;
     public static BufferedImage actionIcon;
     public static BufferedImage foodout;
+    public static BufferedImage touchBlock;
+    public static BufferedImage progressBlock;
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
@@ -46,10 +48,12 @@ public class Assets {
         frypan[1] = AssetLoader.loadImage("/textures/single/frypan_2.png");
         trash = AssetLoader.loadImage("/textures/single/trash.png");
         knife = AssetLoader.loadImage("/textures/single/knife.png");
-        orderTest = AssetLoader.loadImage("/textures/single/order_1.png");
+        order = AssetLoader.loadImage("/textures/single/order.png");
         orderTime = AssetLoader.loadImage("/textures/single/order_time.png");
         actionIcon = AssetLoader.loadImage("/textures/single/action.png");
         foodout = AssetLoader.loadImage("/textures/single/foodout.png");
+        touchBlock = AssetLoader.loadImage("/textures/single/touch_block.png");
+        progressBlock = AssetLoader.loadImage("/textures/single/progress_block.png");
 
         // 음식 관련
         loadFood();
@@ -87,7 +91,7 @@ public class Assets {
     private static void loadTileMap() {
         SpriteSheet tiles = new SpriteSheet(AssetLoader.loadImage(Config.TILEMAP));
         int i = 0;
-        for (int y = 0; y < 6; y++) {
+        for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 5; x++) {
                 TILEMAP[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
             }

@@ -22,7 +22,7 @@ public abstract class InteractionBlock extends Block {
 
     // 현재 오브젝트가 collision object가 되었는지 판단하는 것.
     private boolean isTouch = false;
-    private final BufferedImage touchSprite = Assets.TILEMAP[20];
+    private final BufferedImage touchSprite = Assets.touchBlock;
 
     // 음식을 저장할 수 있는 수.
     protected Food[] holdFood = new Food[4];
@@ -32,7 +32,7 @@ public abstract class InteractionBlock extends Block {
     // 작동 관련
     protected final double progressMax = 100;
     protected double progressValue = 0;
-    private final BufferedImage progressSprite = Assets.TILEMAP[25];
+    private final BufferedImage progressSprite = Assets.progressBlock;
 
     // 비어 있어서 음식을 세팅할 수 있음
     protected WorkState workState = WorkState.NONE;
@@ -72,7 +72,7 @@ public abstract class InteractionBlock extends Block {
     }
 
     public FoodType[] getFoodToFoodType() {
-        FoodType foodTypes[] = new FoodType[holdFoodIndex];
+        FoodType[] foodTypes = new FoodType[holdFoodIndex];
         for (int i = 0; i < holdFoodIndex; i++) {
             foodTypes[i] = holdFood[i].getFoodType();
         }
@@ -97,11 +97,11 @@ public abstract class InteractionBlock extends Block {
 
     public RenderData getTouchRenderData() {
         setTouch(false);
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), touchSprite, DepthType.UI);
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getWidth(), getHeight(), touchSprite, DepthType.EFFECT);
     }
 
     public RenderData getProgressRenderData() {
-        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), (int) (getWidth() * (progressValue / progressMax)), getHeight(), progressSprite, DepthType.UI);
+        return new ImageRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), (int) (getWidth() * (progressValue / progressMax)), getHeight(), progressSprite, DepthType.EFFECT);
     }
 
     public RenderData getNeedActionRenderData() {

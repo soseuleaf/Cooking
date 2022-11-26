@@ -3,8 +3,9 @@ package Component.Render;
 import java.awt.image.BufferedImage;
 
 public class Animation {
-    private int speed, index;
-    private BufferedImage[] frames;
+    private final int speed;
+    private int index;
+    private final BufferedImage[] frames;
     private long lastTime, timer;
 
     public Animation(int speed, BufferedImage[] frames) { // 여러장 애니메이션

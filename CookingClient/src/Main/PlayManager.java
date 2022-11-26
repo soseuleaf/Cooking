@@ -51,50 +51,63 @@ public class PlayManager {
 
         try {
             floorScanner = new Scanner(AssetLoader.loadText(Config.BACKGROUNDMAP));
-            solidScanner = new Scanner(AssetLoader.loadText(Config.SOLIDMAP));
+            solidScanner = new Scanner(AssetLoader.loadText(Config.BLOCKMAP));
 
             for (int y = 0; y < Config.MAP_Y; y++) {
                 for (int x = 0; x < Config.MAP_X; x++) {
                     int tileX = Config.TileSize * x;
                     int tileY = Config.TileSize * y;
-
                     int backgrond = floorScanner.nextInt();
                     int solid = solidScanner.nextInt();
 
                     if (backgrond != -1) {
                         backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], DepthType.MAP, false);
                     }
-                    if (solid != -1) {
-                        if (y < 11) {
-                            objectMap[y][x] = new Table(tileX, tileY, Assets.TILEMAP[backgrond]);
-                        } else {
-                            objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[solid], DepthType.OBJECT, true);
-                        }
+
+                    switch (solid) {
+                        case 0 ->
+                                objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], DepthType.OBJECT, true);
+                        case 1 -> objectMap[y][x] = new Table(tileX, tileY, null);
                     }
                 }
             }
 
-            objectMap[1][4] = new FoodBox(Config.TileSize * 4, Config.TileSize * 1, Assets.FOODLIST.get(0).clone());
-            objectMap[1][5] = new FoodBox(Config.TileSize * 5, Config.TileSize * 1, Assets.FOODLIST.get(2).clone());
-            objectMap[1][6] = new FoodBox(Config.TileSize * 6, Config.TileSize * 1, Assets.FOODLIST.get(4).clone());
-            objectMap[1][7] = new FoodBox(Config.TileSize * 7, Config.TileSize * 1, Assets.FOODLIST.get(6).clone());
-            objectMap[1][8] = new FoodBox(Config.TileSize * 8, Config.TileSize * 1, Assets.FOODLIST.get(9).clone());
-            objectMap[1][9] = new FoodBox(Config.TileSize * 9, Config.TileSize * 1, Assets.FOODLIST.get(12).clone());
-            objectMap[1][10] = new FoodBox(Config.TileSize * 10, Config.TileSize * 1, Assets.FOODLIST.get(14).clone());
-            objectMap[1][11] = new FoodBox(Config.TileSize * 11, Config.TileSize * 1, Assets.FOODLIST.get(16).clone());
-            objectMap[1][12] = new FoodBox(Config.TileSize * 12, Config.TileSize * 1, Assets.FOODLIST.get(18).clone());
-            objectMap[1][13] = new FoodBox(Config.TileSize * 13, Config.TileSize * 1, Assets.FOODLIST.get(20).clone());
-            objectMap[1][14] = new FoodBox(Config.TileSize * 14, Config.TileSize * 1, Assets.FOODLIST.get(22).clone());
+            objectMap[3][1] = new FoodBox(Config.TileSize, Config.TileSize * 3, Assets.FOODLIST.get(12).clone());
+            objectMap[3][2] = new FoodBox(Config.TileSize * 2, Config.TileSize * 3, Assets.FOODLIST.get(16).clone());
+            objectMap[3][3] = new FoodBox(Config.TileSize * 3, Config.TileSize * 3, Assets.FOODLIST.get(14).clone());
+            objectMap[3][4] = new FoodBox(Config.TileSize * 4, Config.TileSize * 3, Assets.FOODLIST.get(6).clone());
+            objectMap[3][5] = new Pot(Config.TileSize * 5, Config.TileSize * 3);
 
-            objectMap[7][8] = new Knife(Config.TileSize * 8, Config.TileSize * 7);
-            objectMap[7][9] = new Pot(Config.TileSize * 9, Config.TileSize * 7);
-            objectMap[7][10] = new Fryer(Config.TileSize * 10, Config.TileSize * 7, true);
-            objectMap[7][11] = new Fryer(Config.TileSize * 11, Config.TileSize * 7, false);
-            objectMap[7][12] = new Frypan(Config.TileSize * 12, Config.TileSize * 7);
-            objectMap[7][13] = new FoodOut(Config.TileSize * 13, Config.TileSize * 7);
+            objectMap[3][7] = new FoodBox(Config.TileSize * 7, Config.TileSize * 3, Assets.FOODLIST.get(9).clone());
+            objectMap[3][8] = new FoodBox(Config.TileSize * 8, Config.TileSize * 3, Assets.FOODLIST.get(0).clone());
+            objectMap[3][9] = new Fryer(Config.TileSize * 9, Config.TileSize * 3, true);
+            objectMap[3][10] = new Fryer(Config.TileSize * 10, Config.TileSize * 3, false);
+            objectMap[3][11] = new FoodBox(Config.TileSize * 11, Config.TileSize * 3, Assets.FOODLIST.get(4).clone());
+            objectMap[3][12] = new FoodBox(Config.TileSize * 12, Config.TileSize * 3, Assets.FOODLIST.get(2).clone());
 
-            objectMap[11][0] = new Trash(Config.TileSize * 0, Config.TileSize * 11);
+            objectMap[3][14] = new Frypan(Config.TileSize * 14, Config.TileSize * 3);
+            objectMap[3][15] = new Frypan(Config.TileSize * 15, Config.TileSize * 3);
+            objectMap[3][16] = new FoodBox(Config.TileSize * 16, Config.TileSize * 3, Assets.FOODLIST.get(18).clone());
+            objectMap[3][17] = new FoodBox(Config.TileSize * 17, Config.TileSize * 3, Assets.FOODLIST.get(20).clone());
+            objectMap[3][18] = new FoodBox(Config.TileSize * 18, Config.TileSize * 3, Assets.FOODLIST.get(22).clone());
+
+            objectMap[8][0] = new Knife(0, Config.TileSize * 8);
+            objectMap[8][6] = new Knife(Config.TileSize * 6, Config.TileSize * 8);
+            objectMap[8][13] = new Knife(Config.TileSize * 13, Config.TileSize * 8);
+            objectMap[8][19] = new Knife(Config.TileSize * 19, Config.TileSize * 8);
+
+
+            objectMap[10][0] = new Trash(0, Config.TileSize * 10);
+            objectMap[10][19] = new Trash(Config.TileSize * 19, Config.TileSize * 10);
+            objectMap[11][0] = new Trash(0, Config.TileSize * 11);
             objectMap[11][19] = new Trash(Config.TileSize * 19, Config.TileSize * 11);
+
+            objectMap[11][7] = new FoodOut(Config.TileSize * 7, Config.TileSize * 11);
+            objectMap[11][8] = new FoodOut(Config.TileSize * 8, Config.TileSize * 11);
+            objectMap[11][9] = new FoodOut(Config.TileSize * 9, Config.TileSize * 11);
+            objectMap[11][10] = new FoodOut(Config.TileSize * 10, Config.TileSize * 11);
+            objectMap[11][11] = new FoodOut(Config.TileSize * 11, Config.TileSize * 11);
+            objectMap[11][12] = new FoodOut(Config.TileSize * 12, Config.TileSize * 11);
 
 
         } catch (Exception e) {
@@ -253,8 +266,13 @@ public class PlayManager {
 
             synchronized (this) {
                 for (Order order : orderArrayList) {
-                    cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.orderTest, DepthType.UI));
-                    cookTogether.addRenderData(new StringRenderData(posX, posY, order.toString()));
+                    int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
+                    int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
+                    int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
+                    int posCenterYU = posCenterY - (int) (Config.TileSize * 0.5);
+
+                    cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.order, DepthType.UI));
+                    cookTogether.addRenderData(new ImageRenderData(posCenterXL, posCenterYU, Config.TileSize, Config.TileSize, Assets.DISHMAP[order.getFoodType().getSpriteNum()], DepthType.UI));
                     cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
                     posX += Config.OrderUiSize * 1.1;
                 }

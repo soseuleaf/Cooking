@@ -74,13 +74,27 @@ public class JavaGameServer extends JFrame {
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
 
+            FoodType[] foodTypes = {
+                    FoodType.COOKED_SALMON,
+                    FoodType.COOKED_BACON,
+                    FoodType.SLICED_BREAD,
+                    FoodType.FRENCH_FRIES,
+                    FoodType.STEAK,
+                    FoodType.FRIED_MANDOO,
+                    FoodType.FRIED_EGG,
+                    FoodType.FRIED_CHICKEN,
+                    FoodType.MUSHROOM_SOUP,
+                    FoodType.TOMATO_SOUP,
+                    FoodType.ONION_SOUP,
+            };
+
             //주문을 수시로 전송
             Timer m = new Timer();
             TimerTask order = new TimerTask() {
                 @Override
                 public void run() {
                     UUID uuid = UUID.randomUUID();
-                    FoodType needFood = FoodType.randomFood();
+                    FoodType needFood = foodTypes[new Random().nextInt(foodTypes.length)];
                     Order order = Order.NewOrder(uuid, needFood);
                     sendOrder(uuid, needFood);
                     AppendText("new order! " + order);
@@ -152,9 +166,11 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendToAll(Object object) {
-        for (int i = 0; i < UserVec.size(); i++) {
-            UserService user = (UserService) UserVec.elementAt(i);
-            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
+        synchronized (this) {
+            for (int i = 0; i < UserVec.size(); i++) {
+                UserService user = (UserService) UserVec.elementAt(i);
+                if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
+            }
         }
     }
 
