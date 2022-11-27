@@ -264,18 +264,16 @@ public class PlayManager {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
 
-            synchronized (this) {
-                for (Order order : orderArrayList) {
-                    int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
-                    int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
-                    int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
-                    int posCenterYU = posCenterY - (int) (Config.TileSize * 0.5);
+            for (Order order : orderArrayList) {
+                int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
+                int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
+                int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
+                int posCenterYU = posCenterY - (int) (Config.TileSize * 0.5);
 
-                    cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.order, DepthType.UI));
-                    cookTogether.addRenderData(new ImageRenderData(posCenterXL, posCenterYU, Config.TileSize, Config.TileSize, Assets.DISHMAP[order.getFoodType().getSpriteNum()], DepthType.UI));
-                    cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
-                    posX += Config.OrderUiSize * 1.1;
-                }
+                cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.order, DepthType.UI));
+                cookTogether.addRenderData(new ImageRenderData(posCenterXL, posCenterYU, Config.TileSize, Config.TileSize, Assets.DISHMAP[order.getFoodType().getSpriteNum()], DepthType.UI));
+                cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
+                posX += Config.OrderUiSize * 1.1;
             }
         }
     }
@@ -301,7 +299,7 @@ public class PlayManager {
         ((InteractionBlock) objectMap[blockPacket.getY()][blockPacket.getX()]).setEventData(blockPacket);
     }
 
-    public synchronized void recvEventPacket(EventPacket eventPacket) {
+    public void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
             case 10 -> orderArrayList.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
             case 20 -> System.out.println("이 패킷이 왜 여기에?");
@@ -314,8 +312,7 @@ public class PlayManager {
         double passedTime = time - statePacket.getTime();
         this.time = statePacket.getTime();
         this.score = statePacket.getScore();
-        synchronized (this) {
-            orderArrayList.replaceAll(order -> order.updateTime(passedTime));
-        }
+        System.out.println(time + ", " + score + orderArrayList);
+        orderArrayList.replaceAll(order -> order.updateTime(passedTime));
     }
 }

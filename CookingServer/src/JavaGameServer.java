@@ -166,19 +166,11 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendToAll(Object object) {
-        synchronized (this) {
-            for (int i = 0; i < UserVec.size(); i++) {
-                UserService user = (UserService) UserVec.elementAt(i);
-                if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
-            }
+        for (int i = 0; i < UserVec.size(); i++) {
+            UserService user = (UserService) UserVec.elementAt(i);
+            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
         }
     }
-
-//    public void AppendObject(FoodPacket packet) {
-//        textArea.append("code = " + packet.code + "id = " + packet.uuid.toString() + " x: " + packet.x + " y: " + packet.y);
-//        textArea.append("\n");
-//        textArea.setCaretPosition(textArea.getText().length());
-//    }
 
     // 새로운 참가자 accept() 하고 user thread를 새로 생성한다.
     class AcceptServer extends Thread {
@@ -230,10 +222,7 @@ public class JavaGameServer extends JFrame {
         }
 
         public void Logout() {
-            //String msg = "[" + UserName + "]님이 퇴장 하였습니다.\n";
             UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
-            //WriteAll(msg); // 나를 제외한 다른 User들에게 전송
-            //AppendText("사용자 " + "[" + UserName + "] 퇴장. 현재 참가자 수 " + UserVec.size());
         }
 
         public void WriteOtherObject(Object ob) {
@@ -245,18 +234,11 @@ public class JavaGameServer extends JFrame {
             }
         }
 
-        public void WriteAllObject(Object ob) {
-            for (int i = 0; i < user_vc.size(); i++) {
-                UserService user = (UserService) user_vc.elementAt(i);
-                if (Objects.equals(user.UserStatus, "O")) {
-                    user.WriteOneObject(ob);
-                }
-            }
-        }
-
         public void WriteOneObject(Object ob) {
             try {
-                oos.writeObject(ob);
+                synchronized (this) {
+                    oos.writeUnshared(ob);
+                }
             } catch (IOException e) {
                 AppendText("oos.writeObject(ob) error");
                 try {
@@ -317,7 +299,7 @@ public class JavaGameServer extends JFrame {
                                 }
                             }
                         }
-                        sendRemoveOrder(packet.getOrderUuid());
+                        //sendRemoveOrder(packet.getOrderUuid());
                     } else {
                         System.out.println("Unknown Packet");
                     }

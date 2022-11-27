@@ -11,7 +11,7 @@ public class Config {
 
     public final static int MAP_X = 20;
     public final static int MAP_Y = 13;
-    public final static int FPS = 10;
+    public final static int FPS = 30;
 
     // MAP
     public final static String TILEMAP = "/textures/tile.png";

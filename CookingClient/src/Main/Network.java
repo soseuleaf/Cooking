@@ -39,7 +39,7 @@ public class Network implements Serializable {
         }
 
     }
-    
+
     class ListenThread extends Thread {
         public void run() {
             Object obcm = null;
@@ -47,9 +47,7 @@ public class Network implements Serializable {
 
             while (true) {
                 try {
-                    synchronized (this) {
-                        obcm = ois.readObject();
-                    }
+                    obcm = ois.readUnshared();
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
                     System.exit(0);
@@ -96,7 +94,7 @@ public class Network implements Serializable {
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드
         try {
-            oos.writeObject(ob);
+            oos.writeUnshared(ob);
         } catch (IOException e) {
             e.printStackTrace();
         }
