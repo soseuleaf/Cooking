@@ -19,9 +19,8 @@ public class Order {
         this.nowTime = nowTime;
     }
 
-    public Order updateTime() {
+    public void updateTime() {
         nowTime--;
-        return this;
     }
 
     public Order updateTime(double time) {

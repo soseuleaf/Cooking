@@ -15,13 +15,14 @@ public class Player extends Character {
 
     @Getter
     private Block collisionBlock = null;
-    private final long messageBoxTimeMax = 1000;
-    private long messageBoxTime = 0;
-    private String message = null;
-    private long messageLastTime = 0;
 
     public Player(String name) {
         super(300, 400, name);
+    }
+
+    /* 데이터 설정 */
+    public void setSpace(boolean space) {
+        onSpace = space;
     }
 
     public void setMoveX(int value) {
@@ -31,6 +32,8 @@ public class Player extends Character {
     public void setMoveY(int value) {
         moveY = value * speed;
     }
+
+    /* 데이터 업데이트 */
 
     public void updateMove(Block[] aroundBox) {
         if (moveX != 0 || moveY != 0) {
@@ -69,10 +72,10 @@ public class Player extends Character {
             if (isHold() && it.canAdd() && it.canFood(peekFood())) {
                 it.addFood(popFood());
                 return true;
-            } else if (!isHold() && it.canPop()) {
+            } else if (canHold() && it.canPop()) {
                 addFood(it.popFood());
                 return true;
-            } else if (!isHold() && it.canAction()) {
+            } else if (canHold() && it.canAction()) {
                 it.action();
                 return true;
             }
@@ -80,9 +83,53 @@ public class Player extends Character {
         return false;
     }
 
-    public void onSpace(boolean space) {
-        onSpace = space;
+    public void updateAnimation() {
+        if (moveX < 0) { //If player is moving left
+            isLookedRight = false;
+            currentAnimation = animLeft;
+        } else if (moveX > 0) { //If player is moving right
+            isLookedRight = true;
+            currentAnimation = animRight;
+        } else if (moveY != 0) { //If player is moving up or down
+            if (isLookedRight) currentAnimation = animRight;
+            else currentAnimation = animLeft;
+        } else { //If player is moving not moving
+            if (isLookedRight) {
+                currentAnimation = animIdleRight;
+            } else {
+                currentAnimation = animIdleLeft;
+            }
+        }
     }
+    
+    /* 충돌 체크 */
+    private boolean isCollision(Block other) { // 충돌 체크 함수
+        if (other == null || !other.isSolid()) return false;
+
+        int boundX = Config.TileSize - (Config.TileSize / 2);
+        int boundY = 2;
+
+        int thisCenterX = x + (getWidth() / 2);
+        int thisCenterXLeft = thisCenterX - (boundX / 2);
+
+        int thisCenterY = y + (getHeight() / 2);
+        int thisCenterYUp = thisCenterY - (boundY / 2);
+
+        int otherCenterX = other.getX() + (Config.TileSize / 2);
+        int otherCenterXLeft = otherCenterX - (Config.TileSize / 2);
+
+        int otherCenterY = other.getY() + (Config.TileSize / 2);
+        int otherCenterYUp = otherCenterY - (Config.TileSize / 2);
+
+        return thisCenterXLeft + boundX >= otherCenterXLeft && thisCenterXLeft <= otherCenterXLeft + Config.TileSize && thisCenterYUp + boundY >= otherCenterYUp && thisCenterYUp <= otherCenterYUp + Config.TileSize;
+    }
+
+
+    /* 메시지 */
+    private final long messageBoxTimeMax = 1000;
+    private long messageBoxTime = 0;
+    private String message = null;
+    private long messageLastTime = 0;
 
     private void addMessage(String message) {
         this.message = message;
@@ -106,45 +153,5 @@ public class Player extends Character {
 
     public RenderData getMessageRenderData() {
         return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight() - Config.TileSize / 2, message);
-    }
-
-    public void updateAnimation() {
-        if (moveX < 0) { //If player is moving left
-            isLookedRight = false;
-            currentAnimation = animLeft;
-        } else if (moveX > 0) { //If player is moving right
-            isLookedRight = true;
-            currentAnimation = animRight;
-        } else if (moveY != 0) { //If player is moving up or down
-            if (isLookedRight) currentAnimation = animRight;
-            else currentAnimation = animLeft;
-        } else { //If player is moving not moving
-            if (isLookedRight) {
-                currentAnimation = animIdleRight;
-            } else {
-                currentAnimation = animIdleLeft;
-            }
-        }
-    }
-
-    private boolean isCollision(Block other) { // 충돌 체크 함수
-        if (other == null || !other.isSolid()) return false;
-
-        int boundX = Config.TileSize - (Config.TileSize / 2);
-        int boundY = 2;
-
-        int thisCenterX = x + (getWidth() / 2);
-        int thisCenterXLeft = thisCenterX - (boundX / 2);
-
-        int thisCenterY = y + (getHeight() / 2);
-        int thisCenterYUp = thisCenterY - (boundY / 2);
-
-        int otherCenterX = other.getX() + (Config.TileSize / 2);
-        int otherCenterXLeft = otherCenterX - (Config.TileSize / 2);
-
-        int otherCenterY = other.getY() + (Config.TileSize / 2);
-        int otherCenterYUp = otherCenterY - (Config.TileSize / 2);
-
-        return thisCenterXLeft + boundX >= otherCenterXLeft && thisCenterXLeft <= otherCenterXLeft + Config.TileSize && thisCenterYUp + boundY >= otherCenterYUp && thisCenterYUp <= otherCenterYUp + Config.TileSize;
     }
 }

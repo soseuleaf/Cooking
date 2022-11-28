@@ -12,7 +12,6 @@ import Component.Render.AssetLoader;
 import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.DepthType;
-import Component.Type.FoodType;
 import Component.Type.StateType;
 import Component.Type.WorkState;
 
@@ -32,7 +31,7 @@ public class PlayManager {
     private Player player;
 
     // 주문 관련
-    private final ArrayList<Order> orderArrayList = new ArrayList<>();
+    private final ArrayList<Order> orders = new ArrayList<>();
 
     private boolean viewUi = false;
 
@@ -171,13 +170,14 @@ public class PlayManager {
         if (keyEventData.d()) player.setMoveX(1);
         if (keyEventData.q()) viewUi = !viewUi;
 
-        player.onSpace(keyEventData.space());
-
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());
 
         // 플레이어 데이터 업데이트
+        player.setSpace(keyEventData.space());
         player.updateMove(aroundObject);
+        player.updateAnimation();
+        player.controlMessageBox();
 
         // 블록 업데이트를 통한 블록 동기화 패킷 전송 
         if (player.updateAction()) {
@@ -192,25 +192,15 @@ public class PlayManager {
             );
 
             if (sendBlock instanceof FoodOut) {
-                for (Order order : orderArrayList) {
-                    if (order.getFoodType() == sendBlock.peekFood().getFoodType()) {
-                        cookTogether.sendEventPacket(order.getUuid(), order.getFoodType());
-                        break;
-                    }
-                }
-
+                orders.stream()
+                        .filter(order -> order.getFoodType() == sendBlock.peekFood().getFoodType())
+                        .findAny()
+                        .ifPresent(order -> cookTogether.sendEventPacket(order.getUuid(), order.getFoodType()));
             }
         }
 
-        player.updateAnimation();
-        player.controlMessageBox();
-
-        FoodType foodType = null;
-        if (player.peekFood() != null) {
-            foodType = player.peekFood().getFoodType();
-        }
         // 데이터 전송
-        cookTogether.sendUserPacket(player.getX(), player.getY(), foodType);
+        cookTogether.sendUserPacket(player.getX(), player.getY(), player.getFoodType());
 
         // 데이터 정리
         player.setMoveX(0);
@@ -310,7 +300,7 @@ public class PlayManager {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
 
-            for (Order order : orderArrayList) {
+            for (Order order : orders) {
                 int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
                 int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
                 int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
@@ -346,9 +336,9 @@ public class PlayManager {
 
     public void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
-            case 10 -> orderArrayList.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
+            case 10 -> orders.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
             case 20 -> System.out.println("이 패킷이 왜 여기에?");
-            case 30 -> orderArrayList.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
+            case 30 -> orders.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
             default -> System.out.println("알 수 없는 이벤트 패킷");
         }
     }
@@ -357,8 +347,8 @@ public class PlayManager {
         double passedTime = time - statePacket.getTime();
         this.time = statePacket.getTime();
         this.score = statePacket.getScore();
-        System.out.println(time + ", " + score + orderArrayList);
-        orderArrayList.replaceAll(order -> order.updateTime(passedTime));
+        System.out.println(time + ", " + score + orders);
+        orders.replaceAll(order -> order.updateTime(passedTime));
 
         if (gameState != statePacket.getStateType()) {
             gameState = statePacket.getStateType();

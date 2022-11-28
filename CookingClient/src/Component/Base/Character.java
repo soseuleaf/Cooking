@@ -8,6 +8,7 @@ import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.DTO.StringRenderData;
+import Component.Type.FoodType;
 import lombok.Getter;
 
 import java.awt.image.BufferedImage;
@@ -50,6 +51,10 @@ public abstract class Character extends Object {
         Food food = holdFood;
         holdFood = null;
         return food;
+    }
+
+    public FoodType getFoodType() {
+        return holdFood == null ? null : holdFood.getFoodType();
     }
 
     public RenderData getStringRenderData() {
