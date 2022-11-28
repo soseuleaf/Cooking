@@ -38,6 +38,20 @@ public class JavaGameServer extends JFrame {
     private int score = 1;
     private final ArrayList<Order> orders = new ArrayList<>();
 
+    private final FoodType[] OrderFoodTypes = {
+            FoodType.COOKED_SALMON,
+            FoodType.COOKED_BACON,
+            FoodType.SLICED_BREAD,
+            FoodType.FRENCH_FRIES,
+            FoodType.STEAK,
+            FoodType.FRIED_MANDOO,
+            FoodType.FRIED_EGG,
+            FoodType.FRIED_CHICKEN,
+            FoodType.MUSHROOM_SOUP,
+            FoodType.TOMATO_SOUP,
+            FoodType.ONION_SOUP,
+    };
+
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 338, 440);
@@ -80,64 +94,8 @@ public class JavaGameServer extends JFrame {
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
 
-            FoodType[] foodTypes = {
-                    FoodType.COOKED_SALMON,
-                    FoodType.COOKED_BACON,
-                    FoodType.SLICED_BREAD,
-                    FoodType.FRENCH_FRIES,
-                    FoodType.STEAK,
-                    FoodType.FRIED_MANDOO,
-                    FoodType.FRIED_EGG,
-                    FoodType.FRIED_CHICKEN,
-                    FoodType.MUSHROOM_SOUP,
-                    FoodType.TOMATO_SOUP,
-                    FoodType.ONION_SOUP,
-            };
-
-            //주문을 수시로 전송
-            Timer m = new Timer();
-            TimerTask order = new TimerTask() {
-                @Override
-                public void run() {
-                    UUID uuid = UUID.randomUUID();
-                    FoodType needFood = foodTypes[new Random().nextInt(foodTypes.length)];
-                    Order order = Order.NewOrder(uuid, needFood);
-                    sendOrder(uuid, needFood);
-                    AppendText("new order! " + order);
-                    synchronized (orders) {
-                        orders.add(order);
-                    }
-                }
-            };
-            m.schedule(order, 0, 1000);
-
-            // 수시로 상태 동기화
-            Timer m2 = new Timer();
-            TimerTask orderUpdate = new TimerTask() {
-                @Override
-                public void run() {
-                    time--;
-                    score++;
-
-                    synchronized (orders) {
-                        Iterator<Order> iter = orders.iterator();
-                        while (iter.hasNext()) {
-                            Order order = iter.next();
-                            order.updateTime();
-                            System.out.println("order: " + order);
-                            if (order.isExpirationOrder()) {
-                                score -= 1000;
-                                sendRemoveOrder(order.getUuid());
-                                iter.remove();
-                            }
-                        }
-                    }
-
-                    System.out.println("-------------------------");
-                    sendState();
-                }
-            };
-            m2.schedule(orderUpdate, 0, 100);
+            startOrderTimer();
+            startStateTimer();
         });
 
         JButton mapChange = new JButton("맵 변경");
@@ -154,6 +112,55 @@ public class JavaGameServer extends JFrame {
 
         contentPane.add(btnServerStart);
         contentPane.add(mapChange);
+    }
+
+    public void startOrderTimer() {
+        //주문을 수시로 전송
+        Timer m = new Timer();
+        TimerTask order = new TimerTask() {
+            @Override
+            public void run() {
+                UUID uuid = UUID.randomUUID();
+                FoodType needFood = OrderFoodTypes[new Random().nextInt(OrderFoodTypes.length)];
+                Order order = Order.NewOrder(uuid, needFood);
+                sendOrder(uuid, needFood);
+                AppendText("new order! " + order);
+                synchronized (orders) {
+                    orders.add(order);
+                }
+            }
+        };
+        m.schedule(order, 0, 10000);
+    }
+
+    public void startStateTimer() {
+        // 수시로 상태 동기화
+        Timer m = new Timer();
+        TimerTask stateUpdate = new TimerTask() {
+            @Override
+            public void run() {
+                time--;
+                score++;
+
+                synchronized (orders) {
+                    Iterator<Order> iter = orders.iterator();
+                    while (iter.hasNext()) {
+                        Order order = iter.next();
+                        order.updateTime();
+                        System.out.println("order: " + order);
+                        if (order.isExpirationOrder()) {
+                            score -= 1000;
+                            sendRemoveOrder(order.getUuid());
+                            iter.remove();
+                        }
+                    }
+                }
+
+                System.out.println("-------------------------");
+                sendState();
+            }
+        };
+        m.schedule(stateUpdate, 0, 1000);
     }
 
     public static void main(String[] args) {
@@ -187,15 +194,28 @@ public class JavaGameServer extends JFrame {
         sendToAll(statePacket);
     }
 
+    public void sendToOther(UUID myUuid, Object ob) {
+        synchronized (userServices) {
+            for (UserService user : userServices) {
+                if (user.canSendPacket(myUuid)) {
+                    user.sendObject(ob);
+                }
+            }
+        }
+    }
+
     public void sendToAll(Object object) {
-        for (UserService user : userServices) {
-            if (user.canSendPacket(null)) user.sendObject(object);
+        synchronized (userServices) {
+            for (UserService user : userServices) {
+                if (user.canSendPacket(null)) {
+                    user.sendObject(object);
+                }
+            }
         }
     }
 
     // 새로운 참가자 accept() 하고 user thread를 새로 생성한다.
     class AcceptServer extends Thread {
-        @SuppressWarnings("unchecked")
         public void run() {
             while (true) { // 사용자 접속을 계속해서 받기 위해 while문
                 try {
@@ -209,7 +229,7 @@ public class JavaGameServer extends JFrame {
                     AppendText("현재 참가자 수 " + userServices.size());
                 } catch (IOException e) {
                     AppendText("accept() error");
-                    // System.exit(0);
+                    System.exit(0);
                 }
             }
         }
@@ -217,7 +237,6 @@ public class JavaGameServer extends JFrame {
 
     // User 당 생성되는 Thread
     class UserService extends Thread {
-
         // 소켓 관련
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
@@ -264,20 +283,12 @@ public class JavaGameServer extends JFrame {
 
         public void logout() {
             ConnectPacket logout = new ConnectPacket(uuid, 200, null, 0, 0);
-            sendObjectToOther(logout);
+            sendToOther(uuid, logout);
             userServices.remove(this);// Logout한 현재 객체를 벡터에서 지운다
         }
 
         public boolean canSendPacket(UUID otherUuid) {
             return this.status == UserStatus.ONLINE && !(this.uuid.equals(otherUuid));
-        }
-
-        public void sendObjectToOther(Object ob) {
-            for (UserService user : userServices) {
-                if (canSendPacket(user.uuid)) {
-                    user.sendObject(ob);
-                }
-            }
         }
 
         public void sendObject(Object ob) {
@@ -294,8 +305,8 @@ public class JavaGameServer extends JFrame {
                     client_socket = null;
                     ois = null;
                     oos = null;
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
                 logout();
             }
@@ -312,9 +323,9 @@ public class JavaGameServer extends JFrame {
                     default -> System.out.println("Unknown Packet");
                 }
             } else if (object instanceof UserPacket packet) {
-                sendObjectToOther(packet);
+                sendToOther(uuid, packet);
             } else if (object instanceof BlockPacket packet) {
-                sendObjectToOther(packet);
+                sendToOther(uuid, packet);
             } else if (object instanceof EventPacket packet) {
                 synchronized (orders) {
                     for (Order order : orders) {
@@ -335,7 +346,7 @@ public class JavaGameServer extends JFrame {
         }
 
         public void run() {
-            Object obcm = null;
+            Object obcm;
             while (true) {
                 try {
                     if (socket == null) break;
