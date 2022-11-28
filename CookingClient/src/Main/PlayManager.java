@@ -13,6 +13,7 @@ import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Type.DepthType;
 import Component.Type.FoodType;
+import Component.Type.StateType;
 import Component.Type.WorkState;
 
 import java.util.ArrayList;
@@ -24,28 +25,69 @@ public class PlayManager {
 
     // 맵 관련
     private final Block[] aroundObject = new Block[9];
-    private final Block[][] backgrondMap = new Block[Config.MAP_Y][Config.MAP_X];
-    private final Block[][] objectMap = new Block[Config.MAP_Y][Config.MAP_X];
+    private Block[][] backgrondMap = new Block[Config.MAP_Y][Config.MAP_X];
+    private Block[][] objectMap = new Block[Config.MAP_Y][Config.MAP_X];
 
     // 플레이어 관련
-    private final Player player;
+    private Player player;
 
     // 주문 관련
     private final ArrayList<Order> orderArrayList = new ArrayList<>();
 
     private boolean viewUi = false;
 
-    // 스코어 관련
+    // 게임 관리
+    private StateType gameState = StateType.WAIT;
     private int score = 0;
     private double time = 300;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
-        this.player = new Player();
-        loadWorld();
+        loadWaitRoom();
+    }
+
+    public void addPlayer(String name) {
+        this.player = new Player(name);
+    }
+
+    private void loadWaitRoom() {
+        clearMap();
+
+        Scanner floorScanner;
+        Scanner solidScanner;
+
+        try {
+            floorScanner = new Scanner(AssetLoader.loadText(Config.WAITROOMMAP));
+            solidScanner = new Scanner(AssetLoader.loadText(Config.WAITROOMSOLID));
+
+            for (int y = 0; y < Config.MAP_Y; y++) {
+                for (int x = 0; x < Config.MAP_X; x++) {
+                    int tileX = Config.TileSize * x;
+                    int tileY = Config.TileSize * y;
+                    int background = floorScanner.nextInt();
+                    int solid = solidScanner.nextInt();
+
+                    switch (solid) {
+                        case -1 ->
+                                backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.MAP, false);
+                        case 0 ->
+                                objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.OBJECT, true);
+                        case 1 ->
+                                objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.BIGOBJ, true);
+                    }
+                }
+            }
+
+            floorScanner.close();
+            solidScanner.close();
+        } catch (Exception e) {
+            System.exit(0);
+        }
     }
 
     private void loadWorld() {
+        clearMap();
+
         Scanner floorScanner;
         Scanner solidScanner;
 
@@ -109,11 +151,16 @@ public class PlayManager {
             objectMap[11][11] = new FoodOut(Config.TileSize * 11, Config.TileSize * 11);
             objectMap[11][12] = new FoodOut(Config.TileSize * 12, Config.TileSize * 11);
 
-
+            floorScanner.close();
+            solidScanner.close();
         } catch (Exception e) {
-            System.out.println(e);
             System.exit(0);
         }
+    }
+
+    private void clearMap() {
+        backgrondMap = new Block[Config.MAP_Y][Config.MAP_X];
+        objectMap = new Block[Config.MAP_Y][Config.MAP_X];
     }
 
     public void update(KeyEventData keyEventData) {
@@ -232,7 +279,6 @@ public class PlayManager {
         }
     }
 
-
     public void updateUiRender() {
         int[] timeArray = new int[4];
         timeArray[0] = (int) time / 60 / 10;
@@ -278,7 +324,6 @@ public class PlayManager {
         }
     }
 
-
     public void recvBlockPacket(BlockPacket blockPacket) {
         if (objectMap[blockPacket.getY()][blockPacket.getX()] instanceof InteractionBlock block) {
             block.setEventData(blockPacket);
@@ -314,5 +359,11 @@ public class PlayManager {
         this.score = statePacket.getScore();
         System.out.println(time + ", " + score + orderArrayList);
         orderArrayList.replaceAll(order -> order.updateTime(passedTime));
+
+        if (gameState != statePacket.getStateType()) {
+            gameState = statePacket.getStateType();
+            if (gameState == StateType.WAIT) loadWaitRoom();
+            else if (gameState == StateType.GAME) loadWorld();
+        }
     }
 }

@@ -20,8 +20,8 @@ public class Player extends Character {
     private String message = null;
     private long messageLastTime = 0;
 
-    public Player() {
-        super(300, 400, "ME");
+    public Player(String name) {
+        super(300, 400, name);
     }
 
     public void setMoveX(int value) {

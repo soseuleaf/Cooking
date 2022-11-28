@@ -3,7 +3,9 @@
 import Component.Order;
 import Component.Packet.*;
 import Component.Type.FoodType;
+import Component.Type.StateType;
 import Component.Type.UserStatus;
+import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,10 +27,11 @@ public class JavaGameServer extends JFrame {
     private final JTextField txtPortNumber;
     private ServerSocket socket; // 서버소켓
     private Socket client_socket; // accept() 에서 생성된 client 소켓
-    private final Vector UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
+    private final Vector<UserService> UserVec = new Vector(); // 연결된 사용자를 저장할 벡터
 
 
     /* 게임 서비스 관련 */
+    private StateType gameState = StateType.WAIT;
     private double time = 6000;
     private int score = 1;
     private final ArrayList<Order> orderArrayList = new ArrayList<>();
@@ -132,8 +135,21 @@ public class JavaGameServer extends JFrame {
             };
             m2.schedule(orderUpdate, 0, 1000);
         });
+
+        JButton mapChange = new JButton("맵 변경");
+        mapChange.addActionListener(e -> {
+            if (gameState == StateType.GAME) {
+                gameState = StateType.WAIT;
+            } else {
+                gameState = StateType.GAME;
+            }
+        });
+
         btnServerStart.setBounds(12, 356, 150, 35);
+        mapChange.setBounds(162, 356, 150, 35);
+
         contentPane.add(btnServerStart);
+        contentPane.add(mapChange);
     }
 
     public static void main(String[] args) {
@@ -163,13 +179,12 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendState() {
-        StatePacket statePacket = new StatePacket(time, score);
+        StatePacket statePacket = new StatePacket(gameState, time, score);
         sendToAll(statePacket);
     }
 
     public void sendToAll(Object object) {
-        for (int i = 0; i < UserVec.size(); i++) {
-            UserService user = (UserService) UserVec.elementAt(i);
+        for (UserService user : UserVec) {
             if (user.canSendPacket(null)) user.sendObject(object);
         }
     }
@@ -199,7 +214,6 @@ public class JavaGameServer extends JFrame {
     // User 당 생성되는 Thread
     class UserService extends Thread {
 
-
         // 소켓 관련
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
@@ -207,8 +221,9 @@ public class JavaGameServer extends JFrame {
 
         // 게임 관련
         public UUID uuid;
-        private final Vector user_vc;
+        private final Vector<UserService> user_vc;
         public UserStatus status = UserStatus.OFFLINE;
+        @Getter
         private ConnectPacket loginPacket;
 
         public UserService(Socket client_socket) {
@@ -224,15 +239,27 @@ public class JavaGameServer extends JFrame {
             }
         }
 
-        public void login(String name, int x, int y) {
-            AppendText("새로운 참가자 " + uuid.toString() + " 입장.");
+        public void registerUser(String name, int x, int y) {
             uuid = UUID.randomUUID();
-            status = UserStatus.ONLINE; // Online 상태
+            status = UserStatus.ONLINE;
+            AppendText("새로운 참가자 " + uuid + " 입장.");
 
-            ConnectPacket login = new ConnectPacket(uuid, 150, name, x, y);
+            // 나에게 uuid 등록을 요청하는 패킷을 주고
+            sendObject(new ConnectPacket(uuid, 100, name, x, y));
 
-            sendObject(login);
-            sendObjectToOther(login);
+            // 보내줄 패킷을 저장
+            loginPacket = new ConnectPacket(uuid, 150, name, x, y);
+        }
+
+        public void login() {
+            synchronized (this) {
+                for (UserService user : user_vc) {
+                    if (canSendPacket(user.uuid)) {
+                        sendObject(user.getLoginPacket());
+                        user.sendObject(loginPacket);
+                    }
+                }
+            }
         }
 
         public void logout() {
@@ -241,15 +268,16 @@ public class JavaGameServer extends JFrame {
             UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
         }
 
-        public boolean canSendPacket(UUID otherUuid){
+        public boolean canSendPacket(UUID otherUuid) {
             return this.status == UserStatus.ONLINE && !(this.uuid.equals(otherUuid));
         }
 
         public void sendObjectToOther(Object ob) {
-            for (int i = 0; i < user_vc.size(); i++) {
-                UserService user = (UserService) user_vc.elementAt(i);
-                if (canSendPacket(user.uuid)) {
-                    user.sendObject(ob);
+            synchronized (this) {
+                for (UserService user : user_vc) {
+                    if (canSendPacket(user.uuid)) {
+                        user.sendObject(ob);
+                    }
                 }
             }
         }
@@ -275,10 +303,13 @@ public class JavaGameServer extends JFrame {
             }
         }
 
-        public void processPacket(Object object){
+        public void processPacket(Object object) {
             if (object instanceof ConnectPacket packet) {
                 switch (packet.getCode()) {
-                    case 100 -> login(packet.getName(), packet.getX(), packet.getY());
+                    case 100 -> {
+                        registerUser(packet.getName(), packet.getX(), packet.getY());
+                        login();
+                    }
                     case 200 -> logout();
                     default -> System.out.println("Unknown Packet");
                 }
@@ -317,9 +348,7 @@ public class JavaGameServer extends JFrame {
                         e.printStackTrace();
                         return;
                     }
-
                     processPacket(obcm);
-
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");
                     try {

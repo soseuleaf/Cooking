@@ -4,6 +4,7 @@ import Component.Packet.*;
 import Component.Type.BlockType;
 import Component.Type.FoodType;
 import Component.Type.WorkState;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,18 +14,16 @@ import java.net.Socket;
 import java.util.UUID;
 
 public class Network implements Serializable {
-    private static final UUID uuid = UUID.randomUUID();
+    @Setter
+    private UUID uuid = null;
     private final CookTogether cookTogether;
     private Socket socket; // 연결소켓
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
-    private String username;
 
-    public Network(CookTogether cookTogether, String username, String ip_addr, String port_no) {
+    public Network(CookTogether cookTogether, String ip_addr, String port_no) {
         this.cookTogether = cookTogether;
         try {
-            this.username = username;
-
             socket = new Socket(ip_addr, Integer.parseInt(port_no));
             oos = new ObjectOutputStream(socket.getOutputStream());
             oos.flush();
@@ -33,7 +32,7 @@ public class Network implements Serializable {
             ListenThread listenThread = new ListenThread();
             listenThread.start();
 
-            sendConnectPacket(100);
+            sendConnectPacket();
         } catch (NumberFormatException | IOException e) {
             e.printStackTrace();
         }
@@ -76,8 +75,8 @@ public class Network implements Serializable {
         }
     }
 
-    public void sendConnectPacket(int code) {
-        sendObject(new ConnectPacket(uuid, code, "유저", 100, 100));
+    public void sendConnectPacket() {
+        sendObject(new ConnectPacket(uuid, 100, "유저", 100, 100));
     }
 
     public void sendUserPacket(int x, int y, FoodType foodType) {
@@ -88,8 +87,8 @@ public class Network implements Serializable {
         sendObject(new BlockPacket(blockType, y, x, foodType, workState, progress));
     }
 
-    public void sendEventPacket(int code, UUID uuid, FoodType foodType) {
-        sendObject(new EventPacket(code, uuid, foodType));
+    public void sendEventPacket(int code, UUID orderUuid, FoodType foodType) {
+        sendObject(new EventPacket(code, orderUuid, foodType));
     }
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드

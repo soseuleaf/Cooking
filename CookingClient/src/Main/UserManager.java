@@ -17,19 +17,28 @@ public class UserManager {
     }
 
     public void recvConnectPacket(ConnectPacket connectPacket) {
-        addNewUser(connectPacket.getUuid(), new User(connectPacket.getX(), connectPacket.getY(), connectPacket.getName()));
+        switch (connectPacket.getCode()) {
+            case 150 ->
+                    addNewUser(connectPacket.getUuid(), new User(connectPacket.getX(), connectPacket.getY(), connectPacket.getUuid().toString()));
+            case 200 -> removeUser(connectPacket.getUuid());
+            default -> System.out.println("ConnectPacketError");
+        }
     }
 
     public void recvUserPacket(UserPacket userPacket) {
         if (userMap.containsKey(userPacket.getUuid())) {
             userMap.get(userPacket.getUuid()).bindEvent(userPacket);
         } else {
-            addNewUser(userPacket.getUuid(), new User(userPacket.getX(), userPacket.getY(), "일단 임시로"));
+            addNewUser(userPacket.getUuid(), new User(userPacket.getX(), userPacket.getY(), "커넥트 패킷 오류"));
         }
     }
 
     private void addNewUser(UUID uuid, User user) {
         userMap.put(uuid, user);
+    }
+
+    private void removeUser(UUID uuid) {
+        userMap.remove(uuid);
     }
 
     public void updateRender() {
@@ -46,13 +55,5 @@ public class UserManager {
         }
     }
 
-    public void addFoodByUser(UUID uuid, Food food) {
-        if (userMap.containsKey(uuid)) {
-            userMap.get(uuid).addFood(food);
-        }
-    }
 
-    public Food popFoodByUser(UUID uuid) {
-        return userMap.get(uuid).popFood();
-    }
 }

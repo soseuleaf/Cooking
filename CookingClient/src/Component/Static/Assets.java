@@ -15,6 +15,7 @@ public class Assets {
     public static BufferedImage[] CHARACTER_MOVE_RIGHT = new BufferedImage[8];
     public static BufferedImage[] NUMBER = new BufferedImage[11];
     public static BufferedImage[] TILEMAP = new BufferedImage[512];
+    public static BufferedImage[] WAITROOM_TILEMAP = new BufferedImage[512];
     public static BufferedImage[] DISHMAP = new BufferedImage[24];
     public static BufferedImage BLACKTILE = new BufferedImage(16, 16, 1);
     public static BufferedImage[] refrig = new BufferedImage[2];
@@ -94,6 +95,14 @@ public class Assets {
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 5; x++) {
                 TILEMAP[i++] = tiles.crop(x * Config.TileSpriteSize, y * Config.TileSpriteSize, Config.TileSpriteSize, Config.TileSpriteSize).build();
+            }
+        }
+
+        SpriteSheet waitroom_tiles = new SpriteSheet(AssetLoader.loadImage(Config.WAITROOMTILEMAP));
+        i = 0;
+        for (int y = 0; y < 15; y++) {
+            for (int x = 0; x < 18; x++) {
+                WAITROOM_TILEMAP[i++] = waitroom_tiles.crop(x * 16, y * 16, 16, 16).build();
             }
         }
     }

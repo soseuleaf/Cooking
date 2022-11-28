@@ -15,9 +15,12 @@ public class Config {
 
     // MAP
     public final static String TILEMAP = "/textures/tile.png";
+    public final static String WAITROOMTILEMAP = "/textures/pokemon_tile.png";
     public final static String DISHMAP = "/textures/dishs.png";
     public final static String CHARACTERSPRITE = "/textures/char_kirby.png";
     public final static String BACKGROUNDMAP = "/worlds/background.txt";
     public final static String BLOCKMAP = "/worlds/block.txt";
+    public final static String WAITROOMMAP = "/worlds/wait-room.txt";
+    public final static String WAITROOMSOLID = "/worlds/wait-room_solid.txt";
     public static int OrderUiSize = 128;
 }

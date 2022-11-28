@@ -14,6 +14,7 @@ public class CookTogether implements Runnable {
     private Display display;
     private Network network;
     private boolean running;
+    private boolean isRegisted = false;
     private PlayManager playManager;
     private UserManager userManager;
 
@@ -40,7 +41,10 @@ public class CookTogether implements Runnable {
     }
 
     public void recvConnectPacket(ConnectPacket connectPacket) {
-        userManager.recvConnectPacket(connectPacket);
+        switch (connectPacket.getCode()) {
+            case 100 -> registerUser(connectPacket.getUuid());
+            case 150, 200 -> userManager.recvConnectPacket(connectPacket);
+        }
     }
 
     public void recvUserPacket(UserPacket userPacket) {
@@ -63,21 +67,29 @@ public class CookTogether implements Runnable {
         this.display = new Display(this);
         this.playManager = new PlayManager(this);
         this.userManager = new UserManager(this);
-        this.network = new Network(this, "Test", "127.0.0.1", "30000");
+        this.network = new Network(this, "127.0.0.1", "30000");
+    }
+
+    private void registerUser(UUID uuid) {
+        network.setUuid(uuid);
+        playManager.addPlayer(uuid.toString());
+        isRegisted = true;
     }
 
     private void update() {
-        // 키 데이터 전송 및 데이터 가공
-        playManager.update(display.getKeyEventData());
+        if (isRegisted) {
+            // 키 데이터 전송 및 데이터 가공
+            playManager.update(display.getKeyEventData());
 
-        // 렌더링 데이터 추출
-        playManager.updatePlayerRender();
-        playManager.updateMapRender();
-        playManager.updateUiRender();
-        userManager.updateRender();
+            // 렌더링 데이터 추출
+            playManager.updatePlayerRender();
+            playManager.updateMapRender();
+            playManager.updateUiRender();
+            userManager.updateRender();
 
-        // 렌더링 진행
-        display.render();
+            // 렌더링 진행
+            display.render();
+        }
     }
 
     @Override
