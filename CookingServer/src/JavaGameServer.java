@@ -328,17 +328,18 @@ public class JavaGameServer extends JFrame {
                 sendToOther(uuid, packet);
             } else if (object instanceof EventPacket packet) {
                 synchronized (orders) {
-                    for (Order order : orders) {
-                        if (packet.getOrderUuid().equals(order.getUuid())) {
-                            if (order.getFoodType() == order.getFoodType()) {
-                                score += 1000;
-                            } else {
-                                score -= 1000;
-                            }
-                            order.updateTime(999);
-                            break;
-                        }
+                    Order findOrder = orders.stream()
+                            .filter(order -> packet.getOrderUuid().equals(order.getUuid()))
+                            .findAny()
+                            .orElse(null);
+
+                    assert findOrder != null;
+                    if (findOrder.getFoodType() == packet.getFoodType()) {
+                        score += 1000;
+                    } else {
+                        score -= 1000;
                     }
+                    findOrder.updateTime(9999);
                 }
             } else {
                 System.out.println("Unknown Packet");
