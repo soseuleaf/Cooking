@@ -3,6 +3,7 @@
 import Component.Order;
 import Component.Packet.*;
 import Component.Type.FoodType;
+import Component.Type.UserStatus;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -112,6 +113,7 @@ public class JavaGameServer extends JFrame {
                 public void run() {
                     time--;
                     score++;
+                    System.out.println(UserVec);
                     synchronized (this) {
                         for (Iterator<Order> i = orderArrayList.iterator(); i.hasNext(); ) {
                             Order order = i.next();
@@ -168,7 +170,7 @@ public class JavaGameServer extends JFrame {
     public void sendToAll(Object object) {
         for (int i = 0; i < UserVec.size(); i++) {
             UserService user = (UserService) UserVec.elementAt(i);
-            if (Objects.equals(user.UserStatus, "O")) user.WriteOneObject(object);
+            if (user.canSendPacket(null)) user.sendObject(object);
         }
     }
 
@@ -196,15 +198,20 @@ public class JavaGameServer extends JFrame {
 
     // User 당 생성되는 Thread
     class UserService extends Thread {
-        public UUID uuid;
-        public String UserStatus;
+
+
+        // 소켓 관련
         private ObjectInputStream ois;
         private ObjectOutputStream oos;
         private Socket client_socket;
+
+        // 게임 관련
+        public UUID uuid;
         private final Vector user_vc;
+        public UserStatus status = UserStatus.OFFLINE;
+        private ConnectPacket loginPacket;
 
         public UserService(Socket client_socket) {
-            // TODO Auto-generated constructor stub
             // 매개변수로 넘어온 자료 저장
             this.client_socket = client_socket;
             this.user_vc = UserVec;
@@ -217,24 +224,37 @@ public class JavaGameServer extends JFrame {
             }
         }
 
-        public void Login() {
+        public void login(String name, int x, int y) {
             AppendText("새로운 참가자 " + uuid.toString() + " 입장.");
+            uuid = UUID.randomUUID();
+            status = UserStatus.ONLINE; // Online 상태
+
+            ConnectPacket login = new ConnectPacket(uuid, 150, name, x, y);
+
+            sendObject(login);
+            sendObjectToOther(login);
         }
 
-        public void Logout() {
+        public void logout() {
+            ConnectPacket logout = new ConnectPacket(uuid, 200, null, 0, 0);
+            sendObjectToOther(logout);
             UserVec.removeElement(this); // Logout한 현재 객체를 벡터에서 지운다
         }
 
-        public void WriteOtherObject(Object ob) {
+        public boolean canSendPacket(UUID otherUuid){
+            return this.status == UserStatus.ONLINE && !(this.uuid.equals(otherUuid));
+        }
+
+        public void sendObjectToOther(Object ob) {
             for (int i = 0; i < user_vc.size(); i++) {
                 UserService user = (UserService) user_vc.elementAt(i);
-                if (Objects.equals(user.UserStatus, "O") && user != this) {
-                    user.WriteOneObject(ob);
+                if (canSendPacket(user.uuid)) {
+                    user.sendObject(ob);
                 }
             }
         }
 
-        public void WriteOneObject(Object ob) {
+        public void sendObject(Object ob) {
             try {
                 synchronized (this) {
                     oos.writeUnshared(ob);
@@ -251,65 +271,62 @@ public class JavaGameServer extends JFrame {
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-                Logout();
+                logout();
+            }
+        }
+
+        public void processPacket(Object object){
+            if (object instanceof ConnectPacket packet) {
+                switch (packet.getCode()) {
+                    case 100 -> login(packet.getName(), packet.getX(), packet.getY());
+                    case 200 -> logout();
+                    default -> System.out.println("Unknown Packet");
+                }
+            } else if (object instanceof UserPacket packet) {
+                sendObjectToOther(packet);
+            } else if (object instanceof BlockPacket packet) {
+                sendObjectToOther(packet);
+            } else if (object instanceof EventPacket packet) {
+                synchronized (this) {
+                    for (Order order : orderArrayList) {
+                        if (packet.getOrderUuid().equals(order.getUuid())) {
+                            if (order.getFoodType() == order.getFoodType()) {
+                                score += 1000;
+                            } else {
+                                score -= 1000;
+                            }
+                            order.updateTime(999);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Unknown Packet");
             }
         }
 
         public void run() {
+            Object obcm = null;
             while (true) {
                 try {
-                    // 선언 및 객체 읽고 에러 처리
-                    Object obcm;
                     if (socket == null) break;
                     try {
-                        obcm = ois.readObject();
+                        obcm = ois.readUnshared();
                         if (obcm == null) break;
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                         return;
                     }
 
-                    // 패킷 판단하고 전달
-                    if (obcm instanceof ConnectPacket packet) {
-                        switch (packet.getCode()) {
-                            case 100 -> {
-                                uuid = packet.getUuid();
-                                UserStatus = "O"; // Online 상태
-                                WriteOtherObject(packet);
-                                Login();
-                            }
-                            case 200 -> WriteOtherObject(packet);
-                            default -> System.out.println("Unknown Packet");
-                        }
-                    } else if (obcm instanceof UserPacket packet) {
-                        WriteOtherObject(packet);
-                    } else if (obcm instanceof BlockPacket packet) {
-                        WriteOtherObject(packet);
-                    } else if (obcm instanceof EventPacket packet) {
-                        synchronized (this) {
-                            for (Order order : orderArrayList) {
-                                if (packet.getOrderUuid().equals(order.getUuid())) {
-                                    if (order.getFoodType() == order.getFoodType()) {
-                                        score += 1000;
-                                    } else {
-                                        score -= 1000;
-                                    }
-                                    order.updateTime(999);
-                                    break;
-                                }
-                            }
-                        }
-                        //sendRemoveOrder(packet.getOrderUuid());
-                    } else {
-                        System.out.println("Unknown Packet");
-                    }
+                    processPacket(obcm);
+
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");
                     try {
                         ois.close();
                         oos.close();
                         client_socket.close();
-                        Logout(); // 에러가난 현재 객체를 벡터에서 지운다
+                        logout(); // 에러가난 현재 객체를 벡터에서 지운다
                         break;
                     } catch (Exception ee) {
                         break;
