@@ -18,15 +18,43 @@ public abstract class Character extends Object {
     private final String name;
     protected Food holdFood = null;
     protected boolean isLookedRight = true;
-    protected Animation animLeft = new Animation(50, Assets.CHARACTER_MOVE_LEFT);
-    protected Animation animRight = new Animation(50, Assets.CHARACTER_MOVE_RIGHT);
-    protected Animation animIdleLeft = new Animation(999, Assets.CHARACTER_IDLE_LEFT);
-    protected Animation animIdleRight = new Animation(999, Assets.CHARACTER_IDLE_RIGHT);
+    protected Animation animLeft;
+    protected Animation animRight;
+    protected Animation animIdleLeft;
+    protected Animation animIdleRight;
     protected Animation currentAnimation = null;
 
 
-    public Character(int x, int y, String name) {
-        super(x, y, Config.TileSize, Config.TileSize, Assets.CHARACTER_IDLE_LEFT[0], DepthType.OBJECT);
+    public Character(int num, String name, int x, int y) {
+        super(x, y, Config.TileSize, Config.TileSize, Assets.BLACKTILE, DepthType.OBJECT);
+
+        switch (num) {
+            default -> {
+                animLeft = new Animation(50, Assets.PLAYER1_MOVE_LEFT);
+                animRight = new Animation(50, Assets.PLAYER1_MOVE_RIGHT);
+                animIdleLeft = new Animation(999, Assets.PLAYER1_IDLE_LEFT);
+                animIdleRight = new Animation(999, Assets.PLAYER1_IDLE_RIGHT);
+            }
+            case 1 -> {
+                animLeft = new Animation(50, Assets.PLAYER2_MOVE_LEFT);
+                animRight = new Animation(50, Assets.PLAYER2_MOVE_RIGHT);
+                animIdleLeft = new Animation(999, Assets.PLAYER2_IDLE_LEFT);
+                animIdleRight = new Animation(999, Assets.PLAYER2_IDLE_RIGHT);
+            }
+            case 2 -> {
+                animLeft = new Animation(50, Assets.PLAYER3_MOVE_LEFT);
+                animRight = new Animation(50, Assets.PLAYER3_MOVE_RIGHT);
+                animIdleLeft = new Animation(999, Assets.PLAYER3_IDLE_LEFT);
+                animIdleRight = new Animation(999, Assets.PLAYER3_IDLE_RIGHT);
+            }
+            case 3 -> {
+                animLeft = new Animation(50, Assets.PLAYER4_MOVE_LEFT);
+                animRight = new Animation(50, Assets.PLAYER4_MOVE_RIGHT);
+                animIdleLeft = new Animation(999, Assets.PLAYER4_IDLE_LEFT);
+                animIdleRight = new Animation(999, Assets.PLAYER4_IDLE_RIGHT);
+            }
+        }
+
         this.name = name;
     }
 

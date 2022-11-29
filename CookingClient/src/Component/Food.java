@@ -44,7 +44,7 @@ public class Food extends Object implements Cloneable {
         try {
             return (Food) super.clone();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
             return new Food(FoodType.EGG);
         }
     }

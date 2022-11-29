@@ -12,13 +12,15 @@ public class ConnectPacket implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID uuid;
     private final int code; // 100: connect, 150: loginPacket, 200: disconnect
+    private final int index; // 100: connect, 150: loginPacket, 200: disconnect
     private final String name;
     private final int x;
     private final int y;
 
-    public ConnectPacket(UUID uuid, int code, String name, int x, int y) {
-        this.uuid = uuid;
+    public ConnectPacket(int code, UUID uuid, int index, String name, int x, int y) {
         this.code = code;
+        this.uuid = uuid;
+        this.index = index;
         this.name = name;
         this.x = x;
         this.y = y;

@@ -5,8 +5,8 @@ import Component.Packet.UserPacket;
 import Component.Static.Assets;
 
 public class User extends Character {
-    public User(int x, int y, String name) {
-        super(x, y, name);
+    public User(int index, String name, int x, int y) {
+        super(index, name, x, y);
     }
 
     public void bindEvent(UserPacket userPacket) {
@@ -29,9 +29,9 @@ public class User extends Character {
         this.x = userPacket.getX();
         this.y = userPacket.getY();
 
-        if(userPacket.getFoodType() != null){
+        if (userPacket.getFoodType() != null) {
             holdFood = Assets.FOODLIST.get(userPacket.getFoodType().ordinal()).clone();
-        } else{
+        } else {
             holdFood = null;
         }
     }

@@ -6,7 +6,7 @@ public class StringRenderData extends RenderData {
     private final String message;
 
     public StringRenderData(int x, int y, String message) {
-        super(x, y, DepthType.UI);
+        super(x, y, DepthType.EFFECT);
         this.message = message;
     }
 

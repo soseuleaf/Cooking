@@ -6,25 +6,25 @@ import Component.Type.FoodType;
 import Component.Type.WorkState;
 import lombok.Setter;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 
 public class Network implements Serializable {
     @Setter
     private UUID uuid = null;
+    private final String nick;
     private final CookTogether cookTogether;
     private Socket socket; // 연결소켓
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    public Network(CookTogether cookTogether, String ip_addr, String port_no) {
+    public Network(CookTogether cookTogether, String ip_addr, int port_no, String nick) {
         this.cookTogether = cookTogether;
+        this.nick = nick;
+
         try {
-            socket = new Socket(ip_addr, Integer.parseInt(port_no));
+            socket = new Socket(ip_addr, port_no);
             oos = new ObjectOutputStream(socket.getOutputStream());
             oos.flush();
             ois = new ObjectInputStream(socket.getInputStream());
@@ -76,7 +76,7 @@ public class Network implements Serializable {
     }
 
     public void sendConnectPacket() {
-        sendObject(new ConnectPacket(uuid, 100, "유저", 100, 100));
+        sendObject(new ConnectPacket(100, uuid, 0, nick, 100, 100));
     }
 
     public void sendUserPacket(int x, int y, FoodType foodType) {

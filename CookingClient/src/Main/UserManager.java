@@ -19,7 +19,7 @@ public class UserManager {
     public void recvConnectPacket(ConnectPacket connectPacket) {
         switch (connectPacket.getCode()) {
             case 150 ->
-                    addNewUser(connectPacket.getUuid(), new User(connectPacket.getX(), connectPacket.getY(), connectPacket.getUuid().toString()));
+                    addNewUser(connectPacket.getUuid(), new User(connectPacket.getIndex(), connectPacket.getName(), connectPacket.getX(), connectPacket.getY()));
             case 200 -> removeUser(connectPacket.getUuid());
             default -> System.out.println("ConnectPacketError");
         }
@@ -28,9 +28,10 @@ public class UserManager {
     public void recvUserPacket(UserPacket userPacket) {
         if (userMap.containsKey(userPacket.getUuid())) {
             userMap.get(userPacket.getUuid()).bindEvent(userPacket);
-        } else {
-            addNewUser(userPacket.getUuid(), new User(userPacket.getX(), userPacket.getY(), "커넥트 패킷 오류"));
         }
+//        else {
+//            addNewUser(userPacket.getUuid(), new User(5, "커넥트 패킷 오류", userPacket.getX(), userPacket.getY()));
+//        }
     }
 
     private void addNewUser(UUID uuid, User user) {

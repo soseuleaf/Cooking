@@ -33,7 +33,8 @@ public class PlayManager {
     // 주문 관련
     private final ArrayList<Order> orders = new ArrayList<>();
 
-    private boolean viewUi = false;
+    private boolean viewOrder = false;
+    private boolean viewManual = false;
 
     // 게임 관리
     private StateType gameState = StateType.WAIT;
@@ -45,8 +46,8 @@ public class PlayManager {
         loadWaitRoom();
     }
 
-    public void addPlayer(String name) {
-        this.player = new Player(name);
+    public void addPlayer(int index, String name) {
+        this.player = new Player(index, name);
     }
 
     private void loadWaitRoom() {
@@ -138,17 +139,17 @@ public class PlayManager {
             objectMap[8][19] = new Knife(Config.TileSize * 19, Config.TileSize * 8);
 
 
+            objectMap[9][0] = new Trash(0, Config.TileSize * 9);
+            objectMap[9][19] = new Trash(Config.TileSize * 19, Config.TileSize * 9);
             objectMap[10][0] = new Trash(0, Config.TileSize * 10);
             objectMap[10][19] = new Trash(Config.TileSize * 19, Config.TileSize * 10);
-            objectMap[11][0] = new Trash(0, Config.TileSize * 11);
-            objectMap[11][19] = new Trash(Config.TileSize * 19, Config.TileSize * 11);
 
-            objectMap[11][7] = new FoodOut(Config.TileSize * 7, Config.TileSize * 11);
-            objectMap[11][8] = new FoodOut(Config.TileSize * 8, Config.TileSize * 11);
-            objectMap[11][9] = new FoodOut(Config.TileSize * 9, Config.TileSize * 11);
-            objectMap[11][10] = new FoodOut(Config.TileSize * 10, Config.TileSize * 11);
-            objectMap[11][11] = new FoodOut(Config.TileSize * 11, Config.TileSize * 11);
-            objectMap[11][12] = new FoodOut(Config.TileSize * 12, Config.TileSize * 11);
+            objectMap[10][7] = new FoodOut(Config.TileSize * 7, Config.TileSize * 10);
+            objectMap[10][8] = new FoodOut(Config.TileSize * 8, Config.TileSize * 10);
+            objectMap[10][9] = new FoodOut(Config.TileSize * 9, Config.TileSize * 10);
+            objectMap[10][10] = new FoodOut(Config.TileSize * 10, Config.TileSize * 10);
+            objectMap[10][11] = new FoodOut(Config.TileSize * 11, Config.TileSize * 10);
+            objectMap[10][12] = new FoodOut(Config.TileSize * 12, Config.TileSize * 10);
 
             floorScanner.close();
             solidScanner.close();
@@ -168,7 +169,8 @@ public class PlayManager {
         if (keyEventData.a()) player.setMoveX(-1);
         if (keyEventData.s()) player.setMoveY(1);
         if (keyEventData.d()) player.setMoveX(1);
-        if (keyEventData.q()) viewUi = !viewUi;
+        if (keyEventData.q()) viewOrder = !viewOrder;
+        if (keyEventData.e()) viewManual = !viewManual;
 
         // 주변 블록 확인
         checkAroundBlock(player.getTileX(), player.getTileY());
@@ -227,6 +229,16 @@ public class PlayManager {
     public void updatePlayerRender() {
         cookTogether.addRenderData(player.getImageRenderData());
         cookTogether.addRenderData(player.getStringRenderData());
+        cookTogether.addRenderData(
+                new ImageRenderData(
+                        player.getX(),
+                        player.getY() - Config.TileSize,
+                        Config.TileSize,
+                        Config.TileSize,
+                        Assets.isMeArrow,
+                        DepthType.EFFECT
+                )
+        );
 
         if (player.isHold()) {
             cookTogether.addRenderData(player.peekFood().getImageRenderData());
@@ -296,7 +308,7 @@ public class PlayManager {
         cookTogether.addRenderData(new StringRenderData(Config.DisplayWidth / 2, 200, String.valueOf(score)));
 
         // 오더 그리기
-        if (viewUi) {
+        if (viewOrder) {
             int posX = 100;
             int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
 
@@ -311,6 +323,10 @@ public class PlayManager {
                 cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
                 posX += Config.OrderUiSize * 1.1;
             }
+        }
+
+        if (viewManual) {
+            cookTogether.addRenderData(new ImageRenderData(0, Config.TileSize, Config.DisplayWidth, 832, Assets.manual, DepthType.UI));
         }
     }
 
@@ -352,8 +368,11 @@ public class PlayManager {
 
         if (gameState != statePacket.getStateType()) {
             gameState = statePacket.getStateType();
-            if (gameState == StateType.WAIT) loadWaitRoom();
-            else if (gameState == StateType.GAME) loadWorld();
+            switch (gameState) {
+                case WAIT -> loadWaitRoom();
+                case GAME -> loadWorld();
+                case END -> orders.clear();
+            }
         }
     }
 }

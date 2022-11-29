@@ -16,8 +16,8 @@ public class Player extends Character {
     @Getter
     private Block collisionBlock = null;
 
-    public Player(String name) {
-        super(300, 400, name);
+    public Player(int index, String name) {
+        super(index, name, 300, 400);
     }
 
     /* 데이터 설정 */
@@ -101,7 +101,7 @@ public class Player extends Character {
             }
         }
     }
-    
+
     /* 충돌 체크 */
     private boolean isCollision(Block other) { // 충돌 체크 함수
         if (other == null || !other.isSolid()) return false;

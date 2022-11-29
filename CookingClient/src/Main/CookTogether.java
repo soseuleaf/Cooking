@@ -20,7 +20,13 @@ public class CookTogether implements Runnable {
 
     public CookTogether() {
         Assets.init();
-        this.init();
+        this.display = new Display(this);
+    }
+
+    public void enterMainGame(String ip, String nick) {
+        this.playManager = new PlayManager(this);
+        this.userManager = new UserManager(this);
+        this.network = new Network(this, ip, Config.PORT, nick);
     }
 
     public void addRenderData(RenderData renderData) {
@@ -42,7 +48,7 @@ public class CookTogether implements Runnable {
 
     public void recvConnectPacket(ConnectPacket connectPacket) {
         switch (connectPacket.getCode()) {
-            case 100 -> registerUser(connectPacket.getUuid());
+            case 100 -> registerUser(connectPacket.getUuid(), connectPacket.getIndex(), connectPacket.getName());
             case 150, 200 -> userManager.recvConnectPacket(connectPacket);
         }
     }
@@ -63,16 +69,9 @@ public class CookTogether implements Runnable {
         playManager.recvStatePacket(statePacket);
     }
 
-    private void init() {
-        this.display = new Display(this);
-        this.playManager = new PlayManager(this);
-        this.userManager = new UserManager(this);
-        this.network = new Network(this, "127.0.0.1", "30000");
-    }
-
-    private void registerUser(UUID uuid) {
+    private void registerUser(UUID uuid, int index, String name) {
         network.setUuid(uuid);
-        playManager.addPlayer(uuid.toString());
+        playManager.addPlayer(index, name);
         isRegisted = true;
     }
 
