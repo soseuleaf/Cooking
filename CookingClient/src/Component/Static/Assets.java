@@ -54,7 +54,8 @@ public class Assets {
     public static BufferedImage progressBlock;
     public static BufferedImage isMeArrow;
     public static BufferedImage manual;
-    public static BufferedImage title;
+    public static BufferedImage ready;
+    public static BufferedImage[] count = new BufferedImage[4];
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
     public static void init() {
@@ -82,6 +83,12 @@ public class Assets {
         progressBlock = AssetLoader.loadImage("/textures/single/progress_block.png");
         isMeArrow = AssetLoader.loadImage("/textures/single/isme_arrow.png");
         manual = AssetLoader.loadImage("/textures/single/manual.png");
+        ready = AssetLoader.loadImage("/textures/single/ready.png");
+
+        count[0] = AssetLoader.loadImage("/textures/single/count_0.png");
+        count[1] = AssetLoader.loadImage("/textures/single/count_1.png");
+        count[2] = AssetLoader.loadImage("/textures/single/count_2.png");
+        count[3] = AssetLoader.loadImage("/textures/single/count_3.png");
 
         // 음식 관련
         loadFood();
@@ -90,7 +97,11 @@ public class Assets {
 
     private static void initFood() {
         for (FoodType type : FoodType.values()) {
-            FOODLIST.add(new Food(type));
+            if (type == FoodType.READY) {
+                FOODLIST.add(new Food());
+            } else {
+                FOODLIST.add(new Food(type));
+            }
         }
     }
 

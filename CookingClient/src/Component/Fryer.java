@@ -54,7 +54,7 @@ public class Fryer extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                progressValue += 1;
+                progressValue += 0.5;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {
@@ -63,7 +63,7 @@ public class Fryer extends InteractionBlock {
                         case CHICKEN -> addFood(Assets.FOODLIST.get(FoodType.FRIED_CHICKEN.ordinal()).clone());
                     }
                     workState = WorkState.DONE;
-                } else if (progressValue == 50) {
+                } else if (progressValue % 26 == 0) {
                     workState = WorkState.NEEDACTION;
                 }
             }

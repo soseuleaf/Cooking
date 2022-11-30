@@ -12,7 +12,7 @@ public class ConnectPacket implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID uuid;
     private final int code; // 100: connect, 150: loginPacket, 200: disconnect
-    private final int index; // 100: connect, 150: loginPacket, 200: disconnect
+    private final int index;
     private final String name;
     private final int x;
     private final int y;

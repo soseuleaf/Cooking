@@ -8,7 +8,7 @@ import Component.Static.Config;
 import lombok.Getter;
 
 public class Player extends Character {
-    private final int speed = 20;
+    private int speed = 12;
     private int moveX;
     private int moveY;
     private boolean onSpace = false;
@@ -31,6 +31,19 @@ public class Player extends Character {
 
     public void setMoveY(int value) {
         moveY = value * speed;
+    }
+
+    public void setSpeed(int value) {
+        speed = value;
+    }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void removeFood() {
+        this.holdFood = null;
     }
 
     /* 데이터 업데이트 */

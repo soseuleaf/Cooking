@@ -24,11 +24,14 @@ public class Display {
     private Canvas canvas;
     private Font font;
     private KeyManager keyManager;
+    private final int randomNum;
     private final CookTogether cookTogether;
 
     public Display(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
-        frame = new JFrame(Config.Title);
+        randomNum = new Random().nextInt(100);
+
+        frame = new JFrame(Config.Title + " | " + randomNum);
         frame.setSize(Config.DisplayWidth, Config.DisplayHeight + 40);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
@@ -75,7 +78,7 @@ public class Display {
         nickLabel.setFont(font.deriveFont(Font.PLAIN, 18f));
         container.add(nickLabel);
 
-        JTextField nickField = new JTextField("유저" + new Random().nextInt(100));
+        JTextField nickField = new JTextField("유저" + randomNum);
         nickField.setSize(200, 30);
         nickField.setLocation(550, 550);
         nickField.setFont(font.deriveFont(Font.PLAIN, 18f));

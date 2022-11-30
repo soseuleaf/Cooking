@@ -15,6 +15,7 @@ public enum SoundType {
     TRASH("trash.wav"),
     ORDER_SUCCESS("order_success.wav"),
     ORDER_FAILED("order_failed.wav"),
+    COUNTDOWN("countdown.wav"),
     ;
 
     @Getter

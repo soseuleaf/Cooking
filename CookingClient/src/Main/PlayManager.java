@@ -12,10 +12,7 @@ import Component.Render.AssetLoader;
 import Component.Static.Assets;
 import Component.Static.Config;
 import Component.Static.SoundPlayer;
-import Component.Type.DepthType;
-import Component.Type.SoundType;
-import Component.Type.StateType;
-import Component.Type.WorkState;
+import Component.Type.*;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -39,17 +36,60 @@ public class PlayManager {
     private boolean viewManual = false;
 
     // 게임 관리
-    private StateType gameState = StateType.WAIT;
+    private StateType gameState;
     private int score = 0;
-    private double time = 240;
+    private double time = 243;
+    private int count = -1;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
-        loadWaitRoom();
+        setWait();
     }
 
     public void addPlayer(int index, String name) {
         this.player = new Player(index, name);
+    }
+
+    private void setWait() {
+        gameState = StateType.WAIT;
+        SoundPlayer.playLoop(SoundType.WAITROOM);
+        loadWaitRoom();
+    }
+
+    private void setInGame() {
+        gameState = StateType.GAME;
+        count = 3;
+        switch (player.getIndex()) {
+            default -> player.setPosition(Config.TileSize * 3, Config.TileSize * 9);
+            case 1 -> player.setPosition(Config.TileSize * 6, Config.TileSize * 9);
+            case 2 -> player.setPosition(Config.TileSize * 9, Config.TileSize * 9);
+            case 3 -> player.setPosition(Config.TileSize * 12, Config.TileSize * 9);
+        }
+        player.removeFood();
+        
+        SoundPlayer.stopBackground();
+        SoundPlayer.play(SoundType.COUNTDOWN);
+
+        new Thread(() -> {
+            try {
+                while (count >= 0) {
+                    Thread.sleep(1000);
+                    count--;
+                }
+                Thread.sleep(2000);
+                SoundPlayer.playLoop(SoundType.INGAME);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        loadWorld();
+    }
+
+    private void setEnd() {
+        gameState = StateType.END;
+        SoundPlayer.stopBackground();
+        orders.clear();
     }
 
     private void loadWaitRoom() {
@@ -69,9 +109,11 @@ public class PlayManager {
                     int background = floorScanner.nextInt();
                     int solid = solidScanner.nextInt();
 
+                    if (background != -1) {
+                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.MAP, false);
+                    }
+
                     switch (solid) {
-                        case -1 ->
-                                backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.MAP, false);
                         case 0 ->
                                 objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.WAITROOM_TILEMAP[background], DepthType.OBJECT, true);
                         case 1 ->
@@ -80,10 +122,21 @@ public class PlayManager {
                 }
             }
 
-            floorScanner.close();
-            solidScanner.close();
+            objectMap[2][10] = new FoodBox(Config.TileSize * 10, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][11] = new FoodBox(Config.TileSize * 11, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][12] = new FoodBox(Config.TileSize * 12, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][13] = new FoodBox(Config.TileSize * 13, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][14] = new FoodBox(Config.TileSize * 14, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][15] = new FoodBox(Config.TileSize * 15, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][16] = new FoodBox(Config.TileSize * 16, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][17] = new FoodBox(Config.TileSize * 17, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
+            objectMap[2][18] = new FoodBox(Config.TileSize * 18, Config.TileSize * 2, Assets.FOODLIST.get(FoodType.READY.ordinal()).clone());
 
-            SoundPlayer.playLoop(SoundType.WAITROOM);
+            objectMap[9][19] = new Trash(Config.TileSize * 19, Config.TileSize * 9);
+            objectMap[10][0] = new Trash(0, Config.TileSize * 10);
+            objectMap[10][19] = new Trash(Config.TileSize * 19, Config.TileSize * 10);
+
+            floorScanner.close();
         } catch (Exception e) {
             System.exit(0);
         }
@@ -103,16 +156,16 @@ public class PlayManager {
                 for (int x = 0; x < Config.MAP_X; x++) {
                     int tileX = Config.TileSize * x;
                     int tileY = Config.TileSize * y;
-                    int backgrond = floorScanner.nextInt();
+                    int background = floorScanner.nextInt();
                     int solid = solidScanner.nextInt();
 
-                    if (backgrond != -1) {
-                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], DepthType.MAP, false);
+                    if (background != -1) {
+                        backgrondMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[background], DepthType.MAP, false);
                     }
 
                     switch (solid) {
                         case 0 ->
-                                objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[backgrond], DepthType.OBJECT, true);
+                                objectMap[y][x] = new Block(tileX, tileY, Config.TileSize, Config.TileSize, Assets.TILEMAP[background], DepthType.OBJECT, true);
                         case 1 -> objectMap[y][x] = new Table(tileX, tileY, null);
                     }
                 }
@@ -142,7 +195,6 @@ public class PlayManager {
             objectMap[8][13] = new Knife(Config.TileSize * 13, Config.TileSize * 8);
             objectMap[8][19] = new Knife(Config.TileSize * 19, Config.TileSize * 8);
 
-
             objectMap[9][0] = new Trash(0, Config.TileSize * 9);
             objectMap[9][19] = new Trash(Config.TileSize * 19, Config.TileSize * 9);
             objectMap[10][0] = new Trash(0, Config.TileSize * 10);
@@ -157,8 +209,6 @@ public class PlayManager {
 
             floorScanner.close();
             solidScanner.close();
-
-            SoundPlayer.playLoop(SoundType.INGAME);
         } catch (Exception e) {
             System.exit(0);
         }
@@ -182,6 +232,13 @@ public class PlayManager {
         checkAroundBlock(player.getTileX(), player.getTileY());
 
         // 플레이어 데이터 업데이트
+        if (time < 10)
+            player.setSpeed(20);
+        else if (time < 30)
+            player.setSpeed(30);
+        else
+            player.setSpeed(12);
+
         player.setSpace(keyEventData.space());
         player.updateMove(aroundObject);
         player.updateAnimation();
@@ -334,6 +391,19 @@ public class PlayManager {
         if (viewManual) {
             cookTogether.addRenderData(new ImageRenderData(0, Config.TileSize, Config.DisplayWidth, 832, Assets.manual, DepthType.UI));
         }
+
+        if (count >= 0) {
+            cookTogether.addRenderData(
+                    new ImageRenderData(
+                            Config.DisplayWidth / 2 - Config.TileSize * 4,
+                            Config.DisplayHeight / 2 - Config.TileSize * 1,
+                            Config.TileSize * 8,
+                            Config.TileSize * 2,
+                            Assets.count[count],
+                            DepthType.UI
+                    )
+            );
+        }
     }
 
     public void recvBlockPacket(BlockPacket blockPacket) {
@@ -382,11 +452,10 @@ public class PlayManager {
         orders.replaceAll(order -> order.updateTime(passedTime));
 
         if (gameState != statePacket.getStateType()) {
-            gameState = statePacket.getStateType();
-            switch (gameState) {
-                case WAIT -> loadWaitRoom();
-                case GAME -> loadWorld();
-                case END -> orders.clear();
+            switch (statePacket.getStateType()) {
+                case WAIT -> setWait();
+                case GAME -> setInGame();
+                case END -> setEnd();
             }
         }
     }

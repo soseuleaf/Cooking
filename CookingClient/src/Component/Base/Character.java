@@ -16,6 +16,8 @@ import java.awt.image.BufferedImage;
 public abstract class Character extends Object {
     @Getter
     private final String name;
+    @Getter
+    private final int index;
     protected Food holdFood = null;
     protected boolean isLookedRight = true;
     protected Animation animLeft;
@@ -24,11 +26,11 @@ public abstract class Character extends Object {
     protected Animation animIdleRight;
     protected Animation currentAnimation = null;
 
-
-    public Character(int num, String name, int x, int y) {
+    public Character(int index, String name, int x, int y) {
         super(x, y, Config.TileSize, Config.TileSize, Assets.BLACKTILE, DepthType.OBJECT);
-
-        switch (num) {
+        this.index = index;
+        
+        switch (index) {
             default -> {
                 animLeft = new Animation(50, Assets.PLAYER1_MOVE_LEFT);
                 animRight = new Animation(50, Assets.PLAYER1_MOVE_RIGHT);

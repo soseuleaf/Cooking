@@ -10,12 +10,11 @@ import javax.sound.sampled.LineUnavailableException;
 import java.io.IOException;
 
 public class SoundPlayer {
-    static AudioInputStream audioStream;
-    static Clip background;
+    private static Clip background;
 
     public static Clip getClip(String path, boolean loop) {
         try {
-            audioStream = AssetLoader.loadAudio(path);
+            AudioInputStream audioStream = AssetLoader.loadAudio(path);
             Clip clip = AudioSystem.getClip();
             clip.open(audioStream);
             clip.loop(loop ? Clip.LOOP_CONTINUOUSLY : 0);
@@ -29,8 +28,15 @@ public class SoundPlayer {
         getClip(soundType.getPath(), false).start();
     }
 
+    public static void stopBackground() {
+        if (background != null) {
+            background.stop();
+            background.close();
+        }
+    }
+
     public static void playLoop(SoundType soundType) {
-        if (background != null) background.stop();
+        stopBackground();
         background = getClip(soundType.getPath(), true);
         background.start();
     }

@@ -48,7 +48,7 @@ public class Frypan extends InteractionBlock {
                 }
             }
             case WORKING -> {
-                progressValue += 0.5;
+                progressValue += 1;
                 if (progressValue > progressMax) {
                     progressValue = 0;
                     switch (popFood().getFoodType()) {

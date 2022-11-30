@@ -32,7 +32,7 @@ public class Order {
     }
 
     public static Order NewOrder(UUID uuid, FoodType foodType) {
-        return new Order(uuid, foodType, 40, 40);
+        return new Order(uuid, foodType, 120, 120);
     }
 
     @Override

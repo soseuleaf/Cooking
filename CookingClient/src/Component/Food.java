@@ -21,6 +21,11 @@ public class Food extends Object implements Cloneable {
         this.foodType = foodType;
     }
 
+    public Food() {
+        super(0, 0, Config.TileSize, Config.TileSize, Assets.ready, DepthType.EFFECT);
+        this.foodType = FoodType.READY;
+    }
+
     public int getId() {
         return foodType.ordinal();
     }

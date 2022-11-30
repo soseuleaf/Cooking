@@ -27,7 +27,8 @@ public enum FoodType {
     TOMATO("토마토", 20),
     TOMATO_SOUP("토마토 스프", 21),
     ONION("양파", 22),
-    ONION_SOUP("양파 스프", 23);
+    ONION_SOUP("양파 스프", 23),
+    READY("준비", 0);
 
     private final String name;
     private final int spriteNum;

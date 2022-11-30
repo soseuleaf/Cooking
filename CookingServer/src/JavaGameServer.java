@@ -35,15 +35,15 @@ public class JavaGameServer extends JFrame {
     /* 게임 서비스 관련 */
     private final String[] playerIndex = {"X", "X", "X", "X", "X"};
     private StateType gameState = StateType.WAIT;
-    private double timeMax = 245;
-    private double time = 245;
+    private double timeMax = 243;
+    private double time = 243;
     private int score = 0;
     private final ArrayList<Order> orders = new ArrayList<>();
 
     /* Timer Task*/
     private final Timer orderTimer = new Timer();
-    private final Timer stateTimer = new Timer();
     private TimerTask orderTask;
+    private final Timer stateTimer = new Timer();
     private TimerTask stateTask;
 
     private boolean taskStarted = false;
@@ -103,30 +103,19 @@ public class JavaGameServer extends JFrame {
 
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
+
+            newStateTask();
+            stateTimer.schedule(stateTask, 0, 1000);
         });
 
         JButton mapChange = new JButton("맵 변경");
         mapChange.addActionListener(e -> {
             if (gameState == StateType.WAIT) {
-                gameState = StateType.GAME;
-
-                if (taskStarted) {
-                    orderTask.cancel();
-                    stateTask.cancel();
-                }
-
-                newOrderTask();
-                newStateTask();
-                orderTimer.schedule(orderTask, 4000, 20000);
-                stateTimer.schedule(stateTask, 0, 1000);
-
-                taskStarted = true;
+                startGame();
             } else if (gameState == StateType.GAME) {
-                gameState = StateType.END;
+                endGame();
             } else if (gameState == StateType.END) {
-                gameState = StateType.WAIT;
-                orders.clear();
-                time = timeMax;
+                waitGame();
             }
             sendState();
         });
@@ -143,7 +132,7 @@ public class JavaGameServer extends JFrame {
         orderTask = new TimerTask() {
             @Override
             public void run() {
-                if (gameState == StateType.GAME) {
+                if (gameState == StateType.GAME && time > 30) {
                     UUID uuid = UUID.randomUUID();
                     FoodType needFood = OrderFoodTypes[new Random().nextInt(OrderFoodTypes.length)];
                     Order order = Order.NewOrder(uuid, needFood);
@@ -163,9 +152,6 @@ public class JavaGameServer extends JFrame {
             @Override
             public void run() {
                 if (gameState == StateType.GAME) {
-                    time--;
-                    score++;
-
                     synchronized (orders) {
                         Iterator<Order> iter = orders.iterator();
                         while (iter.hasNext()) {
@@ -187,17 +173,54 @@ public class JavaGameServer extends JFrame {
                         }
                     }
 
+                    time--;
+                    score++;
+
+                    if (time < 0) endGame();
                     System.out.println("-------------------------");
-
-                    if (time < 0) {
-                        gameState = StateType.END;
-                        orders.clear();
+                } else if (gameState == StateType.WAIT) {
+                    int isReadyCount = (int) userServices.stream().filter(UserService::isReady).count();
+                    int userCount = userServices.size();
+                    if (isReadyCount == userCount && userCount > 0) {
+                        startGame();
                     }
-
-                    sendState();
+                } else if (gameState == StateType.END) {
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        waitGame();
+                    }).start();
                 }
+                sendState();
             }
         };
+    }
+
+    public void waitGame() {
+        gameState = StateType.WAIT;
+        time = timeMax;
+    }
+
+    public void startGame() {
+        gameState = StateType.GAME;
+
+        if (taskStarted) {
+            orderTask.cancel();
+        }
+        newOrderTask();
+        orderTimer.schedule(orderTask, 4000, 10000);
+
+        score = 0;
+        taskStarted = true;
+    }
+
+    public void endGame() {
+        gameState = StateType.END;
+        score -= orders.size() * 1000;
+        orders.clear();
     }
 
     public static void main(String[] args) {
@@ -285,6 +308,7 @@ public class JavaGameServer extends JFrame {
         private UUID uuid;
         private int index;
         private UserStatus status = UserStatus.OFFLINE;
+        private FoodType holdFoodType = null;
         @Getter
         private ConnectPacket loginPacket;
 
@@ -339,6 +363,10 @@ public class JavaGameServer extends JFrame {
             return this.status == UserStatus.ONLINE && !(this.uuid.equals(otherUuid));
         }
 
+        public boolean isReady() {
+            return holdFoodType == FoodType.READY;
+        }
+
         public void sendObject(Object ob) {
             try {
                 synchronized (this) {
@@ -371,6 +399,7 @@ public class JavaGameServer extends JFrame {
                     default -> System.out.println("Unknown Packet");
                 }
             } else if (object instanceof UserPacket packet) {
+                holdFoodType = packet.getFoodType();
                 sendToOther(uuid, packet);
             } else if (object instanceof BlockPacket packet) {
                 sendToOther(uuid, packet);
