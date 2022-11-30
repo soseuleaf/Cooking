@@ -5,11 +5,18 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
+import Component.Static.SoundPlayer;
 import Component.Type.BlockType;
+import Component.Type.SoundType;
 
 public class Trash extends InteractionBlock {
     public Trash(int x, int y) {
         super(x, y, Config.TileSize, Config.TileSize, Assets.trash, BlockType.Trash, 1);
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.TRASH);
     }
 
     @Override

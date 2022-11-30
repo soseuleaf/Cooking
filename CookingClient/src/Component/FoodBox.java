@@ -1,12 +1,14 @@
 package Component;
 
 import Component.Static.Assets;
+import Component.Static.SoundPlayer;
 import Component.Type.BlockType;
 import Component.Type.DepthType;
 import Component.Base.InteractionBlock;
 import Component.Static.Config;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
+import Component.Type.SoundType;
 import Component.Type.WorkState;
 
 import java.awt.image.BufferedImage;
@@ -30,13 +32,17 @@ public class FoodBox extends InteractionBlock {
     }
 
     @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.FOODBOX);
+    }
+
+    @Override
     public boolean canFood(Food food) {
         return false;
     }
 
     @Override
     public void action() {
-        addProgress(50);
     }
 
     @Override

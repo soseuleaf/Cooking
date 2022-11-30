@@ -5,10 +5,8 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
-import Component.Type.BlockType;
-import Component.Type.DepthType;
-import Component.Type.FoodType;
-import Component.Type.WorkState;
+import Component.Static.SoundPlayer;
+import Component.Type.*;
 
 import java.awt.image.BufferedImage;
 
@@ -26,6 +24,11 @@ public class Fryer extends InteractionBlock {
             fryer[1] = Assets.fryer[3];
         }
         currentSprite = fryer[0];
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.FRYER);
     }
 
     @Override

@@ -5,10 +5,8 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
-import Component.Type.BlockType;
-import Component.Type.DepthType;
-import Component.Type.FoodType;
-import Component.Type.WorkState;
+import Component.Static.SoundPlayer;
+import Component.Type.*;
 
 import java.awt.image.BufferedImage;
 
@@ -20,6 +18,11 @@ public class Frypan extends InteractionBlock {
         super(x, y, Config.TileSize, Config.TileSize * 2, Assets.fryer[0], BlockType.Fryerpan, 1);
         frypan = Assets.frypan;
         currentSprite = frypan[0];
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.FRYPAN);
     }
 
     @Override

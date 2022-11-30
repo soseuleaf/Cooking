@@ -4,7 +4,9 @@ import Component.Base.InteractionBlock;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
+import Component.Static.SoundPlayer;
 import Component.Type.BlockType;
+import Component.Type.SoundType;
 
 public class FoodOut extends InteractionBlock {
     public FoodOut(int x, int y) {
@@ -24,6 +26,11 @@ public class FoodOut extends InteractionBlock {
     @Override
     public boolean canAction() {
         return false;
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.ACTION);
     }
 
     @Override

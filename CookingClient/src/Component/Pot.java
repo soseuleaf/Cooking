@@ -5,10 +5,8 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
-import Component.Type.BlockType;
-import Component.Type.DepthType;
-import Component.Type.FoodType;
-import Component.Type.WorkState;
+import Component.Static.SoundPlayer;
+import Component.Type.*;
 
 import java.awt.image.BufferedImage;
 
@@ -19,6 +17,11 @@ public class Pot extends InteractionBlock {
     public Pot(int x, int y) {
         super(x, y, Config.TileSize, Config.TileSize * 2, Assets.pot[0], BlockType.Pot, 4);
         currentSprite = Assets.pot[0];
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.POT);
     }
 
     @Override

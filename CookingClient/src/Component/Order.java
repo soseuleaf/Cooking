@@ -33,11 +33,12 @@ public class Order {
     }
 
     public static Order NewOrder(UUID uuid, FoodType foodType) {
-        return new Order(uuid, foodType, 60, 60);
+        return new Order(uuid, foodType, 40, 40);
     }
 
     @Override
     public String toString() {
         return foodType.getName() + " time: " + getNowTime();
     }
+
 }

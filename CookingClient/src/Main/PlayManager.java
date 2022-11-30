@@ -11,7 +11,9 @@ import Component.Packet.StatePacket;
 import Component.Render.AssetLoader;
 import Component.Static.Assets;
 import Component.Static.Config;
+import Component.Static.SoundPlayer;
 import Component.Type.DepthType;
+import Component.Type.SoundType;
 import Component.Type.StateType;
 import Component.Type.WorkState;
 
@@ -39,7 +41,7 @@ public class PlayManager {
     // 게임 관리
     private StateType gameState = StateType.WAIT;
     private int score = 0;
-    private double time = 300;
+    private double time = 240;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
@@ -80,6 +82,8 @@ public class PlayManager {
 
             floorScanner.close();
             solidScanner.close();
+
+            SoundPlayer.playLoop(SoundType.WAITROOM);
         } catch (Exception e) {
             System.exit(0);
         }
@@ -153,6 +157,8 @@ public class PlayManager {
 
             floorScanner.close();
             solidScanner.close();
+
+            SoundPlayer.playLoop(SoundType.INGAME);
         } catch (Exception e) {
             System.exit(0);
         }
@@ -352,9 +358,18 @@ public class PlayManager {
 
     public void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
-            case 10 -> orders.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
-            case 20 -> System.out.println("이 패킷이 왜 여기에?");
-            case 30 -> orders.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
+            case 10 -> {
+                orders.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
+                SoundPlayer.play(SoundType.ORDER);
+            }
+            case 30 -> {
+                orders.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
+                SoundPlayer.play(SoundType.ORDER_SUCCESS);
+            }
+            case 40 -> {
+                orders.removeIf(order -> order.getUuid().equals(eventPacket.getOrderUuid()));
+                SoundPlayer.play(SoundType.ORDER_FAILED);
+            }
             default -> System.out.println("알 수 없는 이벤트 패킷");
         }
     }

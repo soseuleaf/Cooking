@@ -5,13 +5,20 @@ import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
 import Component.Static.Assets;
 import Component.Static.Config;
+import Component.Static.SoundPlayer;
 import Component.Type.BlockType;
 import Component.Type.FoodType;
+import Component.Type.SoundType;
 import Component.Type.WorkState;
 
 public class Knife extends InteractionBlock {
     public Knife(int x, int y) {
         super(x, y, Config.TileSize, Config.TileSize, Assets.knife, BlockType.Knife, 1);
+    }
+
+    @Override
+    public void playSoundEffect() {
+        SoundPlayer.play(SoundType.KNIFE);
     }
 
     @Override

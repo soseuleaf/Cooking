@@ -1,6 +1,9 @@
 package Component.Render;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +25,16 @@ public class AssetLoader {
         try {
             return Objects.requireNonNull(getResources(path)).openStream();
         } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return null;
+    }
+
+    public static AudioInputStream loadAudio(String path) {
+        try {
+            return AudioSystem.getAudioInputStream(getResources(path));
+        } catch (IOException | UnsupportedAudioFileException e) {
             e.printStackTrace();
             System.exit(1);
         }

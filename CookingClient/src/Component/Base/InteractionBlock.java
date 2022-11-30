@@ -121,8 +121,10 @@ public abstract class InteractionBlock extends Block {
     }
 
     public boolean canAction() {
-        return workState == WorkState.NEEDACTION || workState == WorkState.WORKING;
+        return workState == WorkState.NEEDACTION;
     }
+
+    public abstract void playSoundEffect();
 
     public abstract boolean canFood(Food food);
 

@@ -28,7 +28,6 @@ public class Display {
 
     public Display(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
-
         frame = new JFrame(Config.Title);
         frame.setSize(Config.DisplayWidth, Config.DisplayHeight + 40);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

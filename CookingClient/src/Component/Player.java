@@ -71,12 +71,15 @@ public class Player extends Character {
         if (collisionBlock instanceof InteractionBlock it) {
             if (isHold() && it.canAdd() && it.canFood(peekFood())) {
                 it.addFood(popFood());
+                it.playSoundEffect();
                 return true;
             } else if (canHold() && it.canPop()) {
                 addFood(it.popFood());
+                it.playSoundEffect();
                 return true;
             } else if (canHold() && it.canAction()) {
                 it.action();
+                it.playSoundEffect();
                 return true;
             }
         }

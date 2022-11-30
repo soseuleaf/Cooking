@@ -35,9 +35,18 @@ public class JavaGameServer extends JFrame {
     /* 게임 서비스 관련 */
     private final String[] playerIndex = {"X", "X", "X", "X", "X"};
     private StateType gameState = StateType.WAIT;
-    private double time = 10;
+    private double timeMax = 245;
+    private double time = 245;
     private int score = 0;
     private final ArrayList<Order> orders = new ArrayList<>();
+
+    /* Timer Task*/
+    private final Timer orderTimer = new Timer();
+    private final Timer stateTimer = new Timer();
+    private TimerTask orderTask;
+    private TimerTask stateTask;
+
+    private boolean taskStarted = false;
 
     private final FoodType[] OrderFoodTypes = {
             FoodType.COOKED_SALMON,
@@ -94,20 +103,30 @@ public class JavaGameServer extends JFrame {
 
             AcceptServer accept_server = new AcceptServer();
             accept_server.start();
-
-            startOrderTimer();
-            startStateTimer();
         });
 
         JButton mapChange = new JButton("맵 변경");
         mapChange.addActionListener(e -> {
             if (gameState == StateType.WAIT) {
                 gameState = StateType.GAME;
-            } else {
+
+                if (taskStarted) {
+                    orderTask.cancel();
+                    stateTask.cancel();
+                }
+
+                newOrderTask();
+                newStateTask();
+                orderTimer.schedule(orderTask, 4000, 20000);
+                stateTimer.schedule(stateTask, 0, 1000);
+
+                taskStarted = true;
+            } else if (gameState == StateType.GAME) {
+                gameState = StateType.END;
+            } else if (gameState == StateType.END) {
                 gameState = StateType.WAIT;
                 orders.clear();
-                time = 10;
-                score = 0;
+                time = timeMax;
             }
             sendState();
         });
@@ -119,10 +138,9 @@ public class JavaGameServer extends JFrame {
         contentPane.add(mapChange);
     }
 
-    public void startOrderTimer() {
+    public void newOrderTask() {
         //주문을 수시로 전송
-        Timer m = new Timer();
-        TimerTask order = new TimerTask() {
+        orderTask = new TimerTask() {
             @Override
             public void run() {
                 if (gameState == StateType.GAME) {
@@ -137,16 +155,13 @@ public class JavaGameServer extends JFrame {
                 }
             }
         };
-        m.schedule(order, 0, 10000);
     }
 
-    public void startStateTimer() {
+    public void newStateTask() {
         // 수시로 상태 동기화
-        Timer m = new Timer();
-        TimerTask stateUpdate = new TimerTask() {
+        stateTask = new TimerTask() {
             @Override
             public void run() {
-                System.out.println(userServices);
                 if (gameState == StateType.GAME) {
                     time--;
                     score++;
@@ -158,8 +173,15 @@ public class JavaGameServer extends JFrame {
                             order.updateTime();
                             System.out.println("order: " + order);
                             if (order.isExpirationOrder()) {
-                                score -= 1000;
-                                sendRemoveOrder(order.getUuid());
+                                // 여유생기면 로직 변경...
+                                if (order.getNowTime() < -100) {
+                                    score += 1000;
+                                    sendRemoveOrder(order.getUuid(), true);
+                                } else {
+                                    score -= 1000;
+                                    sendRemoveOrder(order.getUuid(), false);
+                                }
+
                                 iter.remove();
                             }
                         }
@@ -176,7 +198,6 @@ public class JavaGameServer extends JFrame {
                 }
             }
         };
-        m.schedule(stateUpdate, 0, 1000);
     }
 
     public static void main(String[] args) {
@@ -200,8 +221,9 @@ public class JavaGameServer extends JFrame {
         sendToAll(eventPacket);
     }
 
-    public void sendRemoveOrder(UUID uuid) {
-        EventPacket eventPacket = new EventPacket(30, uuid, null);
+    public void sendRemoveOrder(UUID uuid, boolean isSuccess) {
+        int code = isSuccess ? 30 : 40;
+        EventPacket eventPacket = new EventPacket(code, uuid, null);
         sendToAll(eventPacket);
     }
 
@@ -273,6 +295,7 @@ public class JavaGameServer extends JFrame {
                 oos = new ObjectOutputStream(client_socket.getOutputStream());
                 oos.flush();
                 ois = new ObjectInputStream(client_socket.getInputStream());
+                sendState();
             } catch (Exception e) {
                 AppendText("userService error");
             }
@@ -360,11 +383,10 @@ public class JavaGameServer extends JFrame {
 
                     assert findOrder != null;
                     if (findOrder.getFoodType() == packet.getFoodType()) {
-                        score += 1000;
+                        findOrder.updateTime(9999);
                     } else {
-                        score -= 1000;
+                        findOrder.updateTime(findOrder.getNowTime());
                     }
-                    findOrder.updateTime(9999);
                 }
             } else {
                 System.out.println("Unknown Packet");
