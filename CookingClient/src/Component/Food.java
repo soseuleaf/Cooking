@@ -1,13 +1,12 @@
 package Component;
 
-import Component.Type.FoodType;
-import Component.Type.DepthType;
 import Component.Base.Object;
-import Component.Static.Config;
-import Component.Static.Assets;
 import Component.DTO.ImageRenderData;
 import Component.DTO.RenderData;
-import Component.DTO.StringRenderData;
+import Component.Static.Assets;
+import Component.Static.Config;
+import Component.Type.DepthType;
+import Component.Type.FoodType;
 import lombok.Getter;
 
 
@@ -39,11 +38,7 @@ public class Food extends Object implements Cloneable {
         this.y = y;
         this.isCharacter = isCharacter;
     }
-
-    public RenderData getStringRenderData() {
-        return new StringRenderData(x + Config.TileSize - getWidth() + 10, y + Config.TileSize - 10, getName());
-    }
-
+    
     @Override
     public Food clone() {
         try {

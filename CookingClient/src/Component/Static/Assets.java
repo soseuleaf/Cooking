@@ -55,6 +55,7 @@ public class Assets {
     public static BufferedImage isMeArrow;
     public static BufferedImage manual;
     public static BufferedImage ready;
+    public static BufferedImage score;
     public static BufferedImage[] count = new BufferedImage[4];
     public static ArrayList<Food> FOODLIST = new ArrayList<>();
 
@@ -84,6 +85,7 @@ public class Assets {
         isMeArrow = AssetLoader.loadImage("/textures/single/isme_arrow.png");
         manual = AssetLoader.loadImage("/textures/single/manual.png");
         ready = AssetLoader.loadImage("/textures/single/ready.png");
+        score = AssetLoader.loadImage("/textures/single/score.png");
 
         count[0] = AssetLoader.loadImage("/textures/single/count_0.png");
         count[1] = AssetLoader.loadImage("/textures/single/count_1.png");

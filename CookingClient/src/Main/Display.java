@@ -152,6 +152,7 @@ public class Display {
                         null
                 );
             } else if (renderDataItem instanceof StringRenderData data) {
+                graphics.setFont(font.deriveFont(Font.PLAIN, data.getFontSize()));
                 graphics.drawString(
                         data.getMessage(),
                         data.getX(),

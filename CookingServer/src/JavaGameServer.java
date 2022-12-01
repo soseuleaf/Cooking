@@ -40,6 +40,11 @@ public class JavaGameServer extends JFrame {
     private double time = 243;
     private int score = 0;
     private final ArrayList<Order> orders = new ArrayList<>();
+    private long lastTime;
+    private int successFood = 0;
+    private int failedFood = 0;
+    private double averageTime = 0;
+
 
     /* 커스텀 옵션 */
     private int customOrderTime = 120;
@@ -130,44 +135,44 @@ public class JavaGameServer extends JFrame {
         btnServerStart.setBounds(12, 356, 150, 35);
         mapChange.setBounds(162, 356, 150, 35);
 
-        userList = new JList(
-            userServices.stream().map(UserService::toString).toArray()
+        userList = new JList<>(
+                userServices.stream().map(UserService::toString).toArray()
         );
         userList.setBounds(312, 12, 200, 500);
 
-        orderList = new JList(
-            orders.stream().map(Order::toString).toArray()
+        orderList = new JList<>(
+                orders.stream().map(Order::toString).toArray()
         );
         orderList.setBounds(512, 12, 300, 500);
 
         JLabel orderTimeLabel = new JLabel("주문 만료 시간");
         orderTimeLabel.setBounds(13, 400, 150, 20);
 
-        orderTimeField = new JTextField();
+        orderTimeField = new JTextField(Integer.toString(customOrderTime));
         orderTimeField.setBounds(13, 420, 150, 30);
         orderTimeField.addActionListener(
-            e -> {
-                try{
-                    customOrderTime = Integer.parseInt(orderTimeField.getText());
-                } catch (Exception ignored) {
+                e -> {
+                    try {
+                        customOrderTime = Integer.parseInt(orderTimeField.getText());
+                    } catch (Exception ignored) {
 
+                    }
                 }
-            }
         );
 
         JLabel orderAddTimeLabel = new JLabel("주문 추가 시간");
         orderAddTimeLabel.setBounds(163, 400, 150, 20);
 
-        orderAddTimeField = new JTextField();
+        orderAddTimeField = new JTextField(Integer.toString(customOrderAddTime));
         orderAddTimeField.setBounds(163, 420, 150, 30);
         orderAddTimeField.addActionListener(
-            e -> {
-                try{
-                    customOrderAddTime = Integer.parseInt(orderAddTimeField.getText());
-                } catch (Exception ignored) {
+                e -> {
+                    try {
+                        customOrderAddTime = Integer.parseInt(orderAddTimeField.getText());
+                    } catch (Exception ignored) {
 
+                    }
                 }
-            }
         );
 
         contentPane.add(orderTimeLabel);
@@ -215,12 +220,13 @@ public class JavaGameServer extends JFrame {
                                 // 여유생기면 로직 변경...
                                 if (order.getNowTime() < -100) {
                                     score += 1000;
+                                    successFood++;
                                     sendRemoveOrder(order.getUuid(), true);
                                 } else {
                                     score -= 1000;
+                                    failedFood++;
                                     sendRemoveOrder(order.getUuid(), false);
                                 }
-
                                 iter.remove();
                             }
                         }
@@ -229,8 +235,10 @@ public class JavaGameServer extends JFrame {
                     time--;
                     score++;
 
-                    if (time < 0) endGame();
-                    System.out.println("-------------------------");
+                    if (time < 0) {
+                        endGame();
+                    }
+                    System.out.println(score);
                 } else if (gameState == StateType.WAIT) {
                     int isReadyCount = (int) userServices.stream().filter(UserService::isReady).count();
                     int userCount = userServices.size();
@@ -238,14 +246,12 @@ public class JavaGameServer extends JFrame {
                         startGame();
                     }
                 } else if (gameState == StateType.END) {
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                    double second = 1_000_000_000.0;
+                    System.out.println(lastTime / second);
+                    System.out.println(System.nanoTime() / second);
+                    if ((System.nanoTime()) / second > (lastTime / second) + 5) {
                         waitGame();
-                    }).start();
+                    }
                 }
 
                 userList.setListData(
@@ -276,10 +282,14 @@ public class JavaGameServer extends JFrame {
         orderTimer.schedule(orderTask, 4000, customOrderAddTime);
 
         score = 0;
+        successFood = 0;
+        failedFood = 0;
+        averageTime = 0;
         taskStarted = true;
     }
 
     public void endGame() {
+        lastTime = System.nanoTime();
         gameState = StateType.END;
         score -= orders.size() * 1000;
         orders.clear();
@@ -313,7 +323,7 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendState() {
-        StatePacket statePacket = new StatePacket(gameState, time, score);
+        StatePacket statePacket = new StatePacket(gameState, time, successFood, failedFood, (int) (averageTime / successFood), score);
         sendToAll(statePacket);
     }
 
@@ -475,11 +485,8 @@ public class JavaGameServer extends JFrame {
                             .orElse(null);
 
                     assert findOrder != null;
-                    if (findOrder.getFoodType() == packet.getFoodType()) {
-                        findOrder.updateTime(9999);
-                    } else {
-                        findOrder.updateTime(findOrder.getNowTime());
-                    }
+                    averageTime += findOrder.getMaxTime() - findOrder.getNowTime();
+                    findOrder.updateTime(9999);
                 }
             } else {
                 System.out.println("Unknown Packet");

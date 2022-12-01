@@ -29,7 +29,7 @@ public abstract class Character extends Object {
     public Character(int index, String name, int x, int y) {
         super(x, y, Config.TileSize, Config.TileSize, Assets.BLACKTILE, DepthType.OBJECT);
         this.index = index;
-        
+
         switch (index) {
             default -> {
                 animLeft = new Animation(50, Assets.PLAYER1_MOVE_LEFT);
@@ -88,7 +88,7 @@ public abstract class Character extends Object {
     }
 
     public RenderData getStringRenderData() {
-        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getName());
+        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight(), getName(), 18);
     }
 
     @Override

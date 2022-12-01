@@ -12,11 +12,17 @@ public class StatePacket implements Serializable {
     private static final long serialVersionUID = 1L;
     private final StateType stateType;
     private final double time;
+    private final int successFood;
+    private final int failedFood;
+    private final int averageTime;
     private final int score;
 
-    public StatePacket(StateType stateType, double time, int score) {
+    public StatePacket(StateType stateType, double time, int successFood, int failedFood, int averageTime, int score) {
         this.stateType = stateType;
         this.time = time;
+        this.successFood = successFood;
+        this.failedFood = failedFood;
+        this.averageTime = averageTime;
         this.score = score;
     }
 }

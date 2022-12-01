@@ -168,6 +168,6 @@ public class Player extends Character {
     }
 
     public RenderData getMessageRenderData() {
-        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight() - Config.TileSize / 2, message);
+        return new StringRenderData(x + Config.TileSize - getWidth(), y + Config.TileSize - getHeight() - Config.TileSize / 2, message, 18);
     }
 }

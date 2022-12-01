@@ -38,7 +38,7 @@ public abstract class InteractionBlock extends Block {
     protected WorkState workState = WorkState.NONE;
 
     public InteractionBlock(int x, int y, int width, int height, BufferedImage sprite, BlockType blockType, int holdFoodMax) {
-        super(x, y, width, height, sprite, DepthType.BIGOBJ, true);
+        super(x, y, width, height, sprite, DepthType.OBJECT, true);
         this.holdFoodMax = holdFoodMax;
         this.blockType = blockType;
     }
@@ -105,7 +105,7 @@ public abstract class InteractionBlock extends Block {
     }
 
     public RenderData getNeedActionRenderData() {
-        return new ImageRenderData(x, y + 1, Config.TileSize, Config.TileSize, Assets.actionIcon, DepthType.UI);
+        return new ImageRenderData(x, y + 1, Config.TileSize, Config.TileSize, Assets.actionIcon, DepthType.EFFECT);
     }
 
     public void addProgress(double value) {

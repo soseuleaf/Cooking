@@ -38,6 +38,9 @@ public class PlayManager {
     // 게임 관리
     private StateType gameState;
     private int score = 0;
+    private int successFood;
+    private int failedFood;
+    private int averageTime;
     private double time = 243;
     private int count = -1;
 
@@ -66,7 +69,7 @@ public class PlayManager {
             case 3 -> player.setPosition(Config.TileSize * 12, Config.TileSize * 9);
         }
         player.removeFood();
-        
+
         SoundPlayer.stopBackground();
         SoundPlayer.play(SoundType.COUNTDOWN);
 
@@ -358,33 +361,45 @@ public class PlayManager {
         timePosX[3] = timePosX[2] + Config.TileSize;
         int timePosY = 16;
 
-        // 시간 그리기
-        int timeCenter = Config.DisplayWidth / 2 - (Config.TileSize / 2);
-        cookTogether.addRenderData(new ImageRenderData(timeCenter, timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[10], DepthType.UI));
+        if (gameState == StateType.GAME) {
+            // 시간 그리기
+            int timeCenter = Config.DisplayWidth / 2 - (Config.TileSize / 2);
+            cookTogether.addRenderData(new ImageRenderData(timeCenter, timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[10], DepthType.UI));
 
-        for (int i = 0; i < 4; i++) {
-            int tmp = Math.max(timeArray[i], 0);
-            cookTogether.addRenderData(new ImageRenderData(timePosX[i], timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[tmp], DepthType.UI));
-        }
+            for (int i = 0; i < 4; i++) {
+                int tmp = Math.max(timeArray[i], 0);
+                cookTogether.addRenderData(new ImageRenderData(timePosX[i], timePosY, Config.TileSize, Config.TileSize, Assets.NUMBER[tmp], DepthType.UI));
+            }
 
-        // 점수 그리기 임시
-        cookTogether.addRenderData(new StringRenderData(Config.DisplayWidth / 2, 200, String.valueOf(score)));
+            // 오더 그리기
+            if (viewOrder) {
+                int posX = 100;
+                int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
 
-        // 오더 그리기
-        if (viewOrder) {
-            int posX = 100;
-            int posY = (int) (Config.DisplayHeight - (Config.OrderUiSize * 1.1));
+                for (Order order : orders) {
+                    int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
+                    int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
+                    int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
+                    int posCenterYU = posCenterY - (int) (Config.TileSize * 0.5);
 
-            for (Order order : orders) {
-                int posCenterX = posX + (int) (Config.OrderUiSize * 0.5);
-                int posCenterY = posY + (int) (Config.OrderUiSize * 0.5);
-                int posCenterXL = posCenterX - (int) (Config.TileSize * 0.5);
-                int posCenterYU = posCenterY - (int) (Config.TileSize * 0.5);
+                    cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.order, DepthType.UI));
+                    cookTogether.addRenderData(new ImageRenderData(posCenterXL, posCenterYU, Config.TileSize, Config.TileSize, Assets.DISHMAP[order.getFoodType().getSpriteNum()], DepthType.UI));
+                    cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
+                    posX += Config.OrderUiSize * 1.1;
+                }
+            }
 
-                cookTogether.addRenderData(new ImageRenderData(posX, posY, Config.OrderUiSize, Config.OrderUiSize, Assets.order, DepthType.UI));
-                cookTogether.addRenderData(new ImageRenderData(posCenterXL, posCenterYU, Config.TileSize, Config.TileSize, Assets.DISHMAP[order.getFoodType().getSpriteNum()], DepthType.UI));
-                cookTogether.addRenderData(new ImageRenderData(posX, posY, (int) (Config.OrderUiSize * (order.getNowTime() / order.getMaxTime())), Config.OrderUiSize, Assets.orderTime, DepthType.UI));
-                posX += Config.OrderUiSize * 1.1;
+            if (count >= 0) {
+                cookTogether.addRenderData(
+                        new ImageRenderData(
+                                Config.DisplayWidth / 2 - Config.TileSize * 4,
+                                Config.DisplayHeight / 2 - Config.TileSize * 1,
+                                Config.TileSize * 8,
+                                Config.TileSize * 2,
+                                Assets.count[count],
+                                DepthType.UI
+                        )
+                );
             }
         }
 
@@ -392,15 +407,51 @@ public class PlayManager {
             cookTogether.addRenderData(new ImageRenderData(0, Config.TileSize, Config.DisplayWidth, 832, Assets.manual, DepthType.UI));
         }
 
-        if (count >= 0) {
+        if (gameState == StateType.END) {
             cookTogether.addRenderData(
                     new ImageRenderData(
-                            Config.DisplayWidth / 2 - Config.TileSize * 4,
-                            Config.DisplayHeight / 2 - Config.TileSize * 1,
-                            Config.TileSize * 8,
-                            Config.TileSize * 2,
-                            Assets.count[count],
+                            0,
+                            0,
+                            Config.DisplayWidth,
+                            Config.DisplayHeight,
+                            Assets.score,
                             DepthType.UI
+                    )
+            );
+
+            cookTogether.addRenderData(
+                    new StringRenderData(
+                            Config.DisplayWidth / 2,
+                            Config.TileSize * 4,
+                            String.valueOf(successFood),
+                            30
+                    )
+            );
+
+            cookTogether.addRenderData(
+                    new StringRenderData(
+                            Config.DisplayWidth / 2,
+                            Config.TileSize * 6,
+                            String.valueOf(failedFood),
+                            30
+                    )
+            );
+
+            cookTogether.addRenderData(
+                    new StringRenderData(
+                            Config.DisplayWidth / 2,
+                            Config.TileSize * 8,
+                            String.valueOf(averageTime),
+                            30
+                    )
+            );
+
+            cookTogether.addRenderData(
+                    new StringRenderData(
+                            Config.DisplayWidth / 2,
+                            Config.TileSize * 10,
+                            String.valueOf(score),
+                            40
                     )
             );
         }
@@ -448,7 +499,9 @@ public class PlayManager {
         double passedTime = time - statePacket.getTime();
         this.time = statePacket.getTime();
         this.score = statePacket.getScore();
-        System.out.println(time + ", " + score + orders);
+        this.successFood = statePacket.getSuccessFood();
+        this.failedFood = statePacket.getFailedFood();
+        this.averageTime = statePacket.getAverageTime();
         orders.replaceAll(order -> order.updateTime(passedTime));
 
         if (gameState != statePacket.getStateType()) {
