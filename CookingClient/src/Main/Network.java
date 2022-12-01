@@ -88,7 +88,7 @@ public class Network implements Serializable {
     }
 
     public void sendEventPacket(int code, UUID orderUuid, FoodType foodType) {
-        sendObject(new EventPacket(code, orderUuid, foodType));
+        sendObject(new EventPacket(code, orderUuid, foodType, 0));
     }
 
     public void sendObject(Object ob) { // 서버로 메세지를 보내는 메소드

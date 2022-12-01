@@ -25,12 +25,13 @@ public class JavaGameServer extends JFrame {
     private final JTextArea textArea;
     private final JPanel contentPane;
     private final JTextField txtPortNumber;
+    private final JList<Object> userList;
+    private final JList<Object> orderList;
 
     /* 서버 관련 */
     private ServerSocket socket; // 서버소켓
     private Socket client_socket; // accept() 에서 생성된 client 소켓
     private final ArrayList<UserService> userServices = new ArrayList<>(); // 연결된 사용자를 저장할 벡터
-
 
     /* 게임 서비스 관련 */
     private final String[] playerIndex = {"X", "X", "X", "X", "X"};
@@ -39,6 +40,12 @@ public class JavaGameServer extends JFrame {
     private double time = 243;
     private int score = 0;
     private final ArrayList<Order> orders = new ArrayList<>();
+
+    /* 커스텀 옵션 */
+    private int customOrderTime = 120;
+    private int customOrderAddTime = 10000;
+    private JTextField orderTimeField;
+    private JTextField orderAddTimeField;
 
     /* Timer Task*/
     private final Timer orderTimer = new Timer();
@@ -64,7 +71,7 @@ public class JavaGameServer extends JFrame {
 
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 338, 440);
+        setBounds(100, 100, 800, 500);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -123,6 +130,52 @@ public class JavaGameServer extends JFrame {
         btnServerStart.setBounds(12, 356, 150, 35);
         mapChange.setBounds(162, 356, 150, 35);
 
+        userList = new JList(
+            userServices.stream().map(UserService::toString).toArray()
+        );
+        userList.setBounds(312, 12, 200, 500);
+
+        orderList = new JList(
+            orders.stream().map(Order::toString).toArray()
+        );
+        orderList.setBounds(512, 12, 300, 500);
+
+        JLabel orderTimeLabel = new JLabel("주문 만료 시간");
+        orderTimeLabel.setBounds(13, 400, 150, 20);
+
+        orderTimeField = new JTextField();
+        orderTimeField.setBounds(13, 420, 150, 30);
+        orderTimeField.addActionListener(
+            e -> {
+                try{
+                    customOrderTime = Integer.parseInt(orderTimeField.getText());
+                } catch (Exception ignored) {
+
+                }
+            }
+        );
+
+        JLabel orderAddTimeLabel = new JLabel("주문 추가 시간");
+        orderAddTimeLabel.setBounds(163, 400, 150, 20);
+
+        orderAddTimeField = new JTextField();
+        orderAddTimeField.setBounds(163, 420, 150, 30);
+        orderAddTimeField.addActionListener(
+            e -> {
+                try{
+                    customOrderAddTime = Integer.parseInt(orderAddTimeField.getText());
+                } catch (Exception ignored) {
+
+                }
+            }
+        );
+
+        contentPane.add(orderTimeLabel);
+        contentPane.add(orderTimeField);
+        contentPane.add(orderAddTimeLabel);
+        contentPane.add(orderAddTimeField);
+        contentPane.add(userList);
+        contentPane.add(orderList);
         contentPane.add(btnServerStart);
         contentPane.add(mapChange);
     }
@@ -135,9 +188,8 @@ public class JavaGameServer extends JFrame {
                 if (gameState == StateType.GAME && time > 30) {
                     UUID uuid = UUID.randomUUID();
                     FoodType needFood = OrderFoodTypes[new Random().nextInt(OrderFoodTypes.length)];
-                    Order order = Order.NewOrder(uuid, needFood);
+                    Order order = Order.NewOrder(uuid, needFood, customOrderTime);
                     sendOrder(uuid, needFood);
-                    AppendText("new order! " + order);
                     synchronized (orders) {
                         orders.add(order);
                     }
@@ -151,6 +203,7 @@ public class JavaGameServer extends JFrame {
         stateTask = new TimerTask() {
             @Override
             public void run() {
+                AppendText("만료 시간: " + customOrderTime + " 오더 딜레이: " + customOrderAddTime);
                 if (gameState == StateType.GAME) {
                     synchronized (orders) {
                         Iterator<Order> iter = orders.iterator();
@@ -194,6 +247,15 @@ public class JavaGameServer extends JFrame {
                         waitGame();
                     }).start();
                 }
+
+                userList.setListData(
+                        userServices.stream().map(UserService::toString).toArray()
+                );
+
+                orderList.setListData(
+                        orders.stream().map(Order::toString).toArray()
+                );
+
                 sendState();
             }
         };
@@ -211,7 +273,7 @@ public class JavaGameServer extends JFrame {
             orderTask.cancel();
         }
         newOrderTask();
-        orderTimer.schedule(orderTask, 4000, 10000);
+        orderTimer.schedule(orderTask, 4000, customOrderAddTime);
 
         score = 0;
         taskStarted = true;
@@ -240,13 +302,13 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendOrder(UUID uuid, FoodType foodType) {
-        EventPacket eventPacket = new EventPacket(10, uuid, foodType);
+        EventPacket eventPacket = new EventPacket(10, uuid, foodType, customOrderTime);
         sendToAll(eventPacket);
     }
 
     public void sendRemoveOrder(UUID uuid, boolean isSuccess) {
         int code = isSuccess ? 30 : 40;
-        EventPacket eventPacket = new EventPacket(code, uuid, null);
+        EventPacket eventPacket = new EventPacket(code, uuid, null, 0);
         sendToAll(eventPacket);
     }
 
@@ -307,6 +369,7 @@ public class JavaGameServer extends JFrame {
         // 게임 관련
         private UUID uuid;
         private int index;
+        private String name;
         private UserStatus status = UserStatus.OFFLINE;
         private FoodType holdFoodType = null;
         @Getter
@@ -326,8 +389,9 @@ public class JavaGameServer extends JFrame {
         }
 
         public void registerUser(String name, int x, int y) {
-            uuid = UUID.randomUUID();
-            index = Arrays.asList(playerIndex).indexOf("X");
+            this.uuid = UUID.randomUUID();
+            this.index = Arrays.asList(playerIndex).indexOf("X");
+            this.name = name;
 
             playerIndex[index] = "O";
             playerIndex[4] = "X";
@@ -420,6 +484,11 @@ public class JavaGameServer extends JFrame {
             } else {
                 System.out.println("Unknown Packet");
             }
+        }
+
+        @Override
+        public String toString() {
+            return "[" + index + "] " + name + " | " + status;
         }
 
         public void run() {

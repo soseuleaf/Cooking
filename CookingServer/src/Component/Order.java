@@ -31,8 +31,8 @@ public class Order {
         return nowTime < 0;
     }
 
-    public static Order NewOrder(UUID uuid, FoodType foodType) {
-        return new Order(uuid, foodType, 120, 120);
+    public static Order NewOrder(UUID uuid, FoodType foodType, int max) {
+        return new Order(uuid, foodType, max, max);
     }
 
     @Override

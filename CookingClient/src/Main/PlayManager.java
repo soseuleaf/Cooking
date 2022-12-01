@@ -235,7 +235,7 @@ public class PlayManager {
         if (time < 10)
             player.setSpeed(20);
         else if (time < 30)
-            player.setSpeed(30);
+            player.setSpeed(16);
         else
             player.setSpeed(12);
 
@@ -429,7 +429,7 @@ public class PlayManager {
     public void recvEventPacket(EventPacket eventPacket) {
         switch (eventPacket.getCode()) {
             case 10 -> {
-                orders.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType()));
+                orders.add(Order.NewOrder(eventPacket.getOrderUuid(), eventPacket.getFoodType(), eventPacket.getMax()));
                 SoundPlayer.play(SoundType.ORDER);
             }
             case 30 -> {
