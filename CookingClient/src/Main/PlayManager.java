@@ -32,8 +32,6 @@ public class PlayManager {
     // 주문 관련
     private final ArrayList<Order> orders = new ArrayList<>();
 
-    private boolean viewOrder = false;
-    private boolean viewManual = false;
 
     // 게임 관리
     private StateType gameState;
@@ -43,6 +41,11 @@ public class PlayManager {
     private int averageTime;
     private double time = 243;
     private int count = -1;
+
+    // UI
+    private boolean viewOrder = false;
+    private boolean viewManual = false;
+    private boolean isWatch = false;
 
     public PlayManager(CookTogether cookTogether) {
         this.cookTogether = cookTogether;
@@ -389,6 +392,15 @@ public class PlayManager {
                 }
             }
 
+            if (isWatch) {
+                cookTogether.addRenderData(new StringRenderData(
+                        Config.DisplayWidth / 2 - Config.TileSize * 2,
+                        Config.TileSize * 6,
+                        "관전 중 입니다",
+                        60
+                ));
+            }
+
             if (count >= 0) {
                 cookTogether.addRenderData(
                         new ImageRenderData(
@@ -451,7 +463,7 @@ public class PlayManager {
                             Config.DisplayWidth / 2,
                             Config.TileSize * 10,
                             String.valueOf(score),
-                            40
+                            50
                     )
             );
         }
@@ -502,6 +514,7 @@ public class PlayManager {
         this.successFood = statePacket.getSuccessFood();
         this.failedFood = statePacket.getFailedFood();
         this.averageTime = statePacket.getAverageTime();
+        this.isWatch = statePacket.isWatch();
         orders.replaceAll(order -> order.updateTime(passedTime));
 
         if (gameState != statePacket.getStateType()) {

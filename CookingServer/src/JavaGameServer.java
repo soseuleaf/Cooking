@@ -274,6 +274,7 @@ public class JavaGameServer extends JFrame {
 
     public void startGame() {
         gameState = StateType.GAME;
+        userServices.forEach(userService -> userService.setStatus(UserStatus.GAME));
 
         if (taskStarted) {
             orderTask.cancel();
@@ -291,6 +292,7 @@ public class JavaGameServer extends JFrame {
     public void endGame() {
         lastTime = System.nanoTime();
         gameState = StateType.END;
+        userServices.forEach(userService -> userService.setStatus(UserStatus.ONLINE));
         score -= orders.size() * 1000;
         orders.clear();
     }
@@ -323,7 +325,7 @@ public class JavaGameServer extends JFrame {
     }
 
     public void sendState() {
-        StatePacket statePacket = new StatePacket(gameState, time, successFood, failedFood, (int) (averageTime / successFood), score);
+        StatePacket statePacket = new StatePacket(gameState, time, successFood, failedFood, (int) (averageTime / successFood), score, false);
         sendToAll(statePacket);
     }
 
@@ -340,7 +342,10 @@ public class JavaGameServer extends JFrame {
     public void sendToAll(Object object) {
         synchronized (userServices) {
             for (UserService user : userServices) {
-                if (user.canSendPacket(null)) {
+                if (object instanceof StatePacket packet && user.status == UserStatus.WAIT) {
+                    packet.setWatch(true);
+                    user.sendObject(packet);
+                } else if (user.canSendPacket(null)) {
                     user.sendObject(object);
                 }
             }
@@ -406,7 +411,7 @@ public class JavaGameServer extends JFrame {
             playerIndex[index] = "O";
             playerIndex[4] = "X";
 
-            status = UserStatus.ONLINE;
+            status = gameState == StateType.GAME ? UserStatus.WAIT : UserStatus.ONLINE;
             AppendText("새로운 참가자 " + uuid + " 입장.");
 
             // 나에게 uuid 등록을 요청하는 패킷을 주고
@@ -429,12 +434,15 @@ public class JavaGameServer extends JFrame {
             playerIndex[index] = "X";
             ConnectPacket logout = new ConnectPacket(200, uuid, 0, null, 0, 0);
             sendToOther(uuid, logout);
-            userServices.remove(this);// Logout한 현재 객체를 벡터에서 지운다
             threadflag = false;
         }
 
+        public void setStatus(UserStatus status) {
+            this.status = status;
+        }
+
         public boolean canSendPacket(UUID otherUuid) {
-            return this.status == UserStatus.ONLINE && !(this.uuid.equals(otherUuid));
+            return this.status != UserStatus.OFFLINE && !(this.uuid.equals(otherUuid));
         }
 
         public boolean isReady() {
@@ -449,6 +457,7 @@ public class JavaGameServer extends JFrame {
             } catch (IOException e) {
                 AppendText("oos.writeObject(ob) error");
                 try {
+                    userServices.remove(this);
                     ois.close();
                     oos.close();
                     client_socket.close();
@@ -466,13 +475,17 @@ public class JavaGameServer extends JFrame {
             if (object instanceof ConnectPacket packet) {
                 switch (packet.getCode()) {
                     case 100 -> {
-                        registerUser(packet.getName(), packet.getX(), packet.getY());
+                        registerUser(packet.getName(), -100, -100);
                         login();
                     }
                     case 200 -> logout();
                     default -> System.out.println("Unknown Packet");
                 }
-            } else if (object instanceof UserPacket packet) {
+            }
+
+            if (status == UserStatus.WAIT) return;
+
+            if (object instanceof UserPacket packet) {
                 holdFoodType = packet.getFoodType();
                 sendToOther(uuid, packet);
             } else if (object instanceof BlockPacket packet) {
@@ -518,6 +531,7 @@ public class JavaGameServer extends JFrame {
                     processPacket(obcm);
                 } catch (IOException e) {
                     AppendText("ois.readObject() error");
+                    userServices.remove(this);
                     try {
                         ois.close();
                         oos.close();
