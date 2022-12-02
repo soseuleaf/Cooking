@@ -37,7 +37,7 @@ public class Order {
 
     @Override
     public String toString() {
-        return foodType.getName() + " time: " + getNowTime();
+        return foodType.getName() + "/" + getNowTime();
     }
 
 }

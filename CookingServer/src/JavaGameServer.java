@@ -76,7 +76,7 @@ public class JavaGameServer extends JFrame {
 
     public JavaGameServer() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 800, 500);
+        setBounds(100, 100, 600, 500);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -108,8 +108,8 @@ public class JavaGameServer extends JFrame {
             } catch (NumberFormatException | IOException e1) {
                 e1.printStackTrace();
             }
-            AppendText("Chat Server Running..");
-            btnServerStart.setText("Chat Server Running..");
+            AppendText("Cooking Server Running..");
+            btnServerStart.setText("Server Running..");
             btnServerStart.setEnabled(false); // 서버를 더이상 실행시키지 못 하게 막는다
             txtPortNumber.setEnabled(false); // 더이상 포트번호 수정못 하게 막는다
 
@@ -120,7 +120,7 @@ public class JavaGameServer extends JFrame {
             stateTimer.schedule(stateTask, 0, 1000);
         });
 
-        JButton mapChange = new JButton("맵 변경");
+        JButton mapChange = new JButton("강제 진행");
         mapChange.addActionListener(e -> {
             if (gameState == StateType.WAIT) {
                 startGame();
@@ -135,15 +135,19 @@ public class JavaGameServer extends JFrame {
         btnServerStart.setBounds(12, 356, 150, 35);
         mapChange.setBounds(162, 356, 150, 35);
 
+        JLabel userListLabel = new JLabel("유저 리스트");
+        userListLabel.setBounds(324, 12, 120, 20);
         userList = new JList<>(
                 userServices.stream().map(UserService::toString).toArray()
         );
-        userList.setBounds(312, 12, 200, 500);
+        userList.setBounds(324, 32, 120, 420);
 
+        JLabel orderListLabel = new JLabel("오더 리스트");
+        orderListLabel.setBounds(456, 12, 120, 20);
         orderList = new JList<>(
                 orders.stream().map(Order::toString).toArray()
         );
-        orderList.setBounds(512, 12, 300, 500);
+        orderList.setBounds(456, 32, 120, 420);
 
         JLabel orderTimeLabel = new JLabel("주문 만료 시간");
         orderTimeLabel.setBounds(13, 400, 150, 20);
@@ -154,6 +158,7 @@ public class JavaGameServer extends JFrame {
                 e -> {
                     try {
                         customOrderTime = Integer.parseInt(orderTimeField.getText());
+                        AppendText("음식 만료 시간 설정 됨. (" + customOrderTime + "s)");
                     } catch (Exception ignored) {
 
                     }
@@ -169,12 +174,15 @@ public class JavaGameServer extends JFrame {
                 e -> {
                     try {
                         customOrderAddTime = Integer.parseInt(orderAddTimeField.getText());
+                        AppendText("오더 딜레이 설정 됨. (" + customOrderAddTime / 1000 + "s)");
                     } catch (Exception ignored) {
 
                     }
                 }
         );
 
+        contentPane.add(userListLabel);
+        contentPane.add(orderListLabel);
         contentPane.add(orderTimeLabel);
         contentPane.add(orderTimeField);
         contentPane.add(orderAddTimeLabel);
@@ -208,14 +216,12 @@ public class JavaGameServer extends JFrame {
         stateTask = new TimerTask() {
             @Override
             public void run() {
-                AppendText("만료 시간: " + customOrderTime + " 오더 딜레이: " + customOrderAddTime);
                 if (gameState == StateType.GAME) {
                     synchronized (orders) {
                         Iterator<Order> iter = orders.iterator();
                         while (iter.hasNext()) {
                             Order order = iter.next();
                             order.updateTime();
-                            System.out.println("order: " + order);
                             if (order.isExpirationOrder()) {
                                 // 여유생기면 로직 변경...
                                 if (order.getNowTime() < -100) {
@@ -238,7 +244,6 @@ public class JavaGameServer extends JFrame {
                     if (time < 0) {
                         endGame();
                     }
-                    System.out.println(score);
                 } else if (gameState == StateType.WAIT) {
                     int isReadyCount = (int) userServices.stream().filter(UserService::isReady).count();
                     int userCount = userServices.size();
@@ -247,8 +252,6 @@ public class JavaGameServer extends JFrame {
                     }
                 } else if (gameState == StateType.END) {
                     double second = 1_000_000_000.0;
-                    System.out.println(lastTime / second);
-                    System.out.println(System.nanoTime() / second);
                     if ((System.nanoTime()) / second > (lastTime / second) + 5) {
                         waitGame();
                     }
@@ -399,7 +402,7 @@ public class JavaGameServer extends JFrame {
                 ois = new ObjectInputStream(client_socket.getInputStream());
                 sendState();
             } catch (Exception e) {
-                AppendText("userService error");
+                System.out.println("Ping Checked");
             }
         }
 

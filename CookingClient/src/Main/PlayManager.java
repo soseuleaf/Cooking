@@ -54,10 +54,13 @@ public class PlayManager {
 
     public void addPlayer(int index, String name) {
         this.player = new Player(index, name);
+        setDefaultPosition();
     }
 
     private void setWait() {
         gameState = StateType.WAIT;
+        if (player != null) setDefaultPosition();
+
         SoundPlayer.playLoop(SoundType.WAITROOM);
         loadWaitRoom();
     }
@@ -65,12 +68,8 @@ public class PlayManager {
     private void setInGame() {
         gameState = StateType.GAME;
         count = 3;
-        switch (player.getIndex()) {
-            default -> player.setPosition(Config.TileSize * 3, Config.TileSize * 9);
-            case 1 -> player.setPosition(Config.TileSize * 6, Config.TileSize * 9);
-            case 2 -> player.setPosition(Config.TileSize * 9, Config.TileSize * 9);
-            case 3 -> player.setPosition(Config.TileSize * 12, Config.TileSize * 9);
-        }
+
+        setDefaultPosition();
         player.removeFood();
 
         SoundPlayer.stopBackground();
@@ -96,6 +95,15 @@ public class PlayManager {
         gameState = StateType.END;
         SoundPlayer.stopBackground();
         orders.clear();
+    }
+
+    private void setDefaultPosition() {
+        switch (player.getIndex()) {
+            default -> player.setPosition(Config.TileSize * 3, Config.TileSize * 9);
+            case 1 -> player.setPosition(Config.TileSize * 6, Config.TileSize * 9);
+            case 2 -> player.setPosition(Config.TileSize * 9, Config.TileSize * 9);
+            case 3 -> player.setPosition(Config.TileSize * 12, Config.TileSize * 9);
+        }
     }
 
     private void loadWaitRoom() {
