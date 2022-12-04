@@ -61,7 +61,7 @@ public class PlayManager {
         gameState = StateType.WAIT;
         if (player != null) setDefaultPosition();
 
-        SoundPlayer.playLoop(SoundType.WAITROOM);
+        //SoundPlayer.playLoop(SoundType.WAITROOM);
         loadWaitRoom();
     }
 
@@ -82,7 +82,7 @@ public class PlayManager {
                     count--;
                 }
                 Thread.sleep(2000);
-                SoundPlayer.playLoop(SoundType.INGAME);
+                //SoundPlayer.playLoop(SoundType.INGAME);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

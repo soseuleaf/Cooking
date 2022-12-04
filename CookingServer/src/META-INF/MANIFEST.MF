@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: JavaGameServer
+Class-Path: lombok-1.18.22.jar
+
