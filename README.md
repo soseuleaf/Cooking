@@ -10,6 +10,9 @@
 ### 인게임 스샷
 ![preview](https://user-images.githubusercontent.com/61658477/206435614-a8127e06-c86f-49f8-bdaa-7c09a3c60690.png)
 
+### 플레이 영상
+[![Video Label](http://img.youtube.com/vi/iLZbx9MS6pw/0.jpg)](https://www.youtube.com/watch?v=iLZbx9MS6pw)
+
 ## 게임 설명
 
 ### 조작
